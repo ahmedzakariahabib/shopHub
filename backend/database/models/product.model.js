@@ -63,11 +63,16 @@ const schema = new mongoose.Schema(
       ref: "brand",
     },
     createdBy: {
-          type: mongoose.Types.ObjectId,
-          ref: "user",
-        },
+      type: mongoose.Types.ObjectId,
+      ref: "user",
+    },
   },
   { timestamps: true }
 );
+
+schema.post("init", function (doc) {
+  doc.imgCover = process.env.baseURL + "uploads/" + doc.imgCover;
+  doc.images = doc.images.map((img) => process.env.baseURL + "uploads/" + img);
+});
 
 export const productModel = mongoose.model("product", schema);

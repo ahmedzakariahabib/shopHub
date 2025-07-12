@@ -23,4 +23,8 @@ const schema = new mongoose.Schema(
   { timestamps: true }
 );
 
+schema.post("init", function (doc) {
+  doc.logo = process.env.baseURL + "uploads/" + doc.logo;
+});
+
 export const brandModel = mongoose.model("brand", schema);
