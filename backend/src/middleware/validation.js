@@ -6,7 +6,12 @@ export const validation = (schema) => {
     if (req.file) {
       filter = { image: req.file, ...req.params, ...req.body, ...req.query };
     } else if (req.files) {
-      filter = { ...req.files, ...req.params, ...req.body, ...req.query };
+      const files = {
+        imageCover: req.files.imgCover,
+        images: req.files.images,
+      };
+      filter = { ...files, ...req.body, ...req.params, ...req.query };
+      // filter = { ...req.files, ...req.params, ...req.body, ...req.query };
     } else {
       filter = { ...req.params, ...req.body, ...req.query };
     }
