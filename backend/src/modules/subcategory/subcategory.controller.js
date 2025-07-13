@@ -1,6 +1,7 @@
 import slugify from "slugify";
 import { subcategoryModel } from "../../../database/models/subcategory.model.js";
 import { catchError } from "../../middleware/catchError.js";
+import { deleteOne } from "../handlers/handlers.js";
 
 const addSubCategory = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
@@ -11,7 +12,13 @@ const addSubCategory = catchError(async (req, res, next) => {
 });
 
 const getAllSubCategories = catchError(async (req, res, next) => {
-  let subcategories = await subcategoryModel.find({});
+  let filterObj = {};
+  if (req.params.category) {
+    filterObj.category = req.params.category;
+  }
+  let subcategories = await subcategoryModel
+    .find(filterObj)
+    .populate("category");
   res.json({ message: "success", subcategories });
 });
 
@@ -32,11 +39,7 @@ const updateSubCategory = catchError(async (req, res, next) => {
   subcategory && res.json({ message: "success", subcategory });
 });
 
-const deleteSubCategory = catchError(async (req, res, next) => {
-  let subcategory = await subcategoryModel.findByIdAndDelete(req.params.id);
-  !subcategory && res.status(404).json({ message: "subcategory not found" });
-  subcategory && res.json({ message: "success", subcategory });
-});
+const deleteSubCategory = deleteOne(subcategoryModel);
 export {
   addSubCategory,
   getAllSubCategories,

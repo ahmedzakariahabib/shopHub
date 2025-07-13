@@ -13,7 +13,7 @@ import {
   deleteSubCategory,
 } from "./subcategory.controller.js";
 
-const subCategoryRouter = express.Router();
+const subCategoryRouter = express.Router({ mergeParams: true });
 
 subCategoryRouter
   .route("/")

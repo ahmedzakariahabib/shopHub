@@ -13,9 +13,9 @@ import {
 } from "./category.validation.js";
 import { validation } from "../../middleware/validation.js";
 import { uploadSingleFile } from "../../services/fileUploads/fileUploads.js";
-
+import subcategoryRouter from "../subcategory/subcategory.routes.js";
 const categoryRouter = express.Router();
-
+categoryRouter.use("/:category/subcategories", subcategoryRouter);
 categoryRouter
   .route("/")
   .post(uploadSingleFile("img"), validation(addCategoryVal), addCategory)

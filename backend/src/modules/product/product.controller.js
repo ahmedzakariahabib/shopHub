@@ -1,6 +1,8 @@
 import slugify from "slugify";
 import { catchError } from "../../middleware/catchError.js";
 import { productModel } from "../../../database/models/product.model.js";
+import { deleteOne } from "../handlers/handlers.js";
+
 const addProduct = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.title);
   console.log(req.files);
@@ -13,8 +15,23 @@ const addProduct = catchError(async (req, res, next) => {
 });
 
 const getAllProducts = catchError(async (req, res, next) => {
-  let products = await productModel.find({});
-  res.json({ message: "success", products });
+  // pagination
+  if (req.query.page <= 0) req.query.page = 1;
+  let pageNumber = req.query.page * 1 || 1;
+  let pageLimit = 2;
+  let skip = (pageNumber - 1) * pageLimit;
+  //filter
+  let filterObj = { ...req.query };
+  // remove page sort fields keyword from filter object
+  let excludeFields = ["page", "sort", "fields", "keyword"];
+  excludeFields.forEach((val) => delete filterObj[val]);
+
+  filterObj = JSON.stringify(filterObj);
+  filterObj = filterObj.replace(/(gt|gte|lt|lte)/g, (match) => "$" + match);
+  filterObj = JSON.parse(filterObj);
+
+  let products = await productModel.find(filterObj).skip(skip).limit(pageLimit);
+  res.json({ message: "success", page: pageNumber, products });
 });
 
 const getSingleProduct = catchError(async (req, res, next) => {
@@ -36,11 +53,7 @@ const updateProduct = catchError(async (req, res, next) => {
   product && res.json({ message: "success", product });
 });
 
-const deleteProduct = catchError(async (req, res, next) => {
-  let product = await productModel.findByIdAndDelete(req.params.id);
-  !product && res.status(404).json({ message: "product not found" });
-  product && res.json({ message: "success", product });
-});
+const deleteProduct = deleteOne(productModel);
 export {
   addProduct,
   getAllProducts,
