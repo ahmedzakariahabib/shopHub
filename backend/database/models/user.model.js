@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const schema = new mongoose.Schema(
   {
@@ -15,7 +16,7 @@ const schema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required,
+      required: true,
     },
     isActive: {
       type: Boolean,
@@ -33,9 +34,20 @@ const schema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+      lowercase: true,
     },
   },
   { timestamps: true }
 );
 
+schema.pre("save", function () {
+  //this return all schema object before save
+  // console.log(this);
+  this.password = bcrypt.hashSync(this.password, 8);
+});
+
+schema.pre("findOneAndUpdate", function () {
+  //this here refer to return from findOneAndUpdate
+  this._update.password = bcrypt.hashSync(this._update.password, 8);
+});
 export const userModel = mongoose.model("user", schema);
