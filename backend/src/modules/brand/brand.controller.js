@@ -2,6 +2,7 @@ import slugify from "slugify";
 import { catchError } from "../../middleware/catchError.js";
 import { brandModel } from "../../../database/models/brand.model.js";
 import { deleteOne } from "../handlers/handlers.js";
+import { ApiFeatures } from "../../utils/apiFeatures.js";
 
 const addBrand = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
@@ -13,8 +14,15 @@ const addBrand = catchError(async (req, res, next) => {
 });
 
 const getAllBrands = catchError(async (req, res, next) => {
-  let Brands = await brandModel.find({});
-  res.json({ message: "success", Brands });
+  let apiFeatures = new ApiFeatures(brandModel.find(), req.query)
+    .pagination()
+    .fields()
+    .sort()
+    .search()
+    .filter();
+
+  let Brands = await apiFeatures.mongooseQuery;
+  res.json({ message: "success", page: apiFeatures.pageNumber, Brands });
 });
 
 const getSingleBrand = catchError(async (req, res, next) => {

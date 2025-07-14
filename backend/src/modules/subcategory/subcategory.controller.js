@@ -2,7 +2,7 @@ import slugify from "slugify";
 import { subcategoryModel } from "../../../database/models/subcategory.model.js";
 import { catchError } from "../../middleware/catchError.js";
 import { deleteOne } from "../handlers/handlers.js";
-
+import { ApiFeatures } from "../../utils/apiFeatures.js";
 const addSubCategory = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
   let subcategory = new subcategoryModel(req.body);
@@ -16,10 +16,17 @@ const getAllSubCategories = catchError(async (req, res, next) => {
   if (req.params.category) {
     filterObj.category = req.params.category;
   }
-  let subcategories = await subcategoryModel
-    .find(filterObj)
-    .populate("category");
-  res.json({ message: "success", subcategories });
+
+  let apiFeatures = new ApiFeatures(subcategoryModel.find(filterObj), req.query)
+    .pagination()
+    .fields()
+    .sort()
+    .search()
+    .filter();
+
+  let subcategories = await apiFeatures.mongooseQuery;
+
+  res.json({ message: "success", page: apiFeatures.pageNumber, subcategories });
 });
 
 const getSingleSubCategory = catchError(async (req, res, next) => {
