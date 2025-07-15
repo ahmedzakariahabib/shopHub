@@ -67,7 +67,7 @@ const schema = new mongoose.Schema(
       ref: "user",
     },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
 
 schema.post("init", function (doc) {
@@ -77,6 +77,16 @@ schema.post("init", function (doc) {
       (img) => process.env.baseURL + "uploads/" + img
     );
   }
+});
+//virtual populate
+schema.virtual("myReviews", {
+  ref: "review",
+  localField: "_id",
+  foreignField: "product",
+});
+
+schema.pre("findOne", function () {
+  this.populate("myReviews");
 });
 
 export const productModel = mongoose.model("product", schema);

@@ -27,6 +27,7 @@ const schema = new mongoose.Schema(
 );
 
 schema.pre("find", function () {
+  //arrow functions do not contain this
   this.populate("category");
 });
 

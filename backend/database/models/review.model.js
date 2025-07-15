@@ -23,5 +23,9 @@ const schema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+//=>>/^find/ any thing start with find
+schema.pre(/^find/, function () {
+  this.populate("user", "name");
+});
 
 export const reviewModel = mongoose.model("review", schema);

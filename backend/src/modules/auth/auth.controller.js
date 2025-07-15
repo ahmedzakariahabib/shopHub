@@ -44,7 +44,7 @@ const changePassword = catchError(async (req, res, next) => {
 
   next(new AppError("incorret email or password", 401));
 });
-
+//authentication
 const protectedRoutes = catchError(async (req, res, next) => {
   let { token } = req.headers;
   //1.token is exist or not
@@ -63,7 +63,7 @@ const protectedRoutes = catchError(async (req, res, next) => {
   req.user = user;
   next();
 });
-
+//authorization
 const allowedTo = (...roles) => {
   return catchError(async (req, res, next) => {
     if (!roles.includes(req.user.role))
