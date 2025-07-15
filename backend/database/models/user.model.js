@@ -37,6 +37,14 @@ const schema = new mongoose.Schema(
       lowercase: true,
     },
     passwordChangedAt: Date,
+    wishlist: [{ type: mongoose.Types.ObjectId, ref: "product" }],
+    addresses: [
+      {
+        street: String,
+        city: String,
+        phone: String,
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -44,11 +52,12 @@ const schema = new mongoose.Schema(
 schema.pre("save", function () {
   //this return all schema object before save
   // console.log(this);
-  this.password = bcrypt.hashSync(this.password, 8);
+  if (this.password) this.password = bcrypt.hashSync(this.password, 8);
 });
 
 schema.pre("findOneAndUpdate", function () {
   //this here refer to return from findOneAndUpdate
-  this._update.password = bcrypt.hashSync(this._update.password, 8);
+  if (this._update.password)
+    this._update.password = bcrypt.hashSync(this._update.password, 8);
 });
 export const userModel = mongoose.model("user", schema);
