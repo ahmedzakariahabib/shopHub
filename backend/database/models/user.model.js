@@ -36,6 +36,7 @@ const schema = new mongoose.Schema(
       default: "user",
       lowercase: true,
     },
+    passwordChangedAt: Date,
   },
   { timestamps: true }
 );

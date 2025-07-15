@@ -15,4 +15,13 @@ const signinVal = Joi.object({
   ),
 });
 
-export { signupVal, signinVal };
+const changePasswordVal = Joi.object({
+  password: Joi.string().pattern(
+    /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+  ),
+  newPassword: Joi.string().pattern(
+    /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+  ),
+});
+
+export { signupVal, signinVal, changePasswordVal };
