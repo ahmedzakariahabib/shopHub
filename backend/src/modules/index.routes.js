@@ -2,6 +2,7 @@ import { globalError } from "../middleware/globalError.js";
 import addressRouter from "./address/address.routes.js";
 import authRouter from "./auth/auth.routes.js";
 import brandRouter from "./brand/brand.routes.js";
+import cartRouter from "./cart/cart.routes.js";
 import categoryRouter from "./category/category.routes.js";
 import couponRouter from "./coupon/coupon.routes.js";
 import productRouter from "./product/product.routes.js";
@@ -20,6 +21,7 @@ export const bootstrap = (app) => {
   app.use("/api/v1/wishlist", wishlistRouter);
   app.use("/api/v1/addresses", addressRouter);
   app.use("/api/v1/coupons", couponRouter);
+  app.use("/api/v1/carts", cartRouter);
   app.get("/", (req, res) => res.send("Hello with E-commerce App!"));
   app.use(globalError);
 };
