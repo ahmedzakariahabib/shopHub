@@ -3,6 +3,12 @@ import { AppError } from "../../utils/AppError.js";
 import { cartModel } from "../../../database/models/cart.model.js";
 import { orderModel } from "../../../database/models/order.model.js";
 import { productModel } from "../../../database/models/product.model.js";
+
+import Stripe from "stripe";
+const stripe = new Stripe(
+  "sk_test_51Rm9InFSWuXJyUu5bUejFpOGnRi3wzqXWwFJW1BwJOgShnHlzOgaMKuIrKZ6nRFblS3vJ69OuCFiqWJ5MHciPdhc004BamwyuL"
+);
+
 const createCashOrder = catchError(async (req, res, next) => {
   //1.get cart -> cartId
   let cart = await cartModel.findById(req.params.id);
@@ -52,4 +58,37 @@ const getAllOrders = catchError(async (req, res, next) => {
   res.status(200).json({ message: "success", orders });
 });
 
-export { createCashOrder, getSpecificOrder, getAllOrders };
+const createCheckOutSession = catchError(async (req, res, next) => {
+  let cart = await cartModel.findById(req.params.id);
+  let totalOrderPrice = cart.totalPriceAfterDiscount
+    ? cart.totalPriceAfterDiscount
+    : cart.totalPrice;
+  let session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        price_data: {
+          currency: "egp",
+          unit_amount: totalOrderPrice * 100,
+          product_data: {
+            name: req.user.name,
+          },
+        },
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    success_url: "http://localhost:3000/",
+    cancel_url: "http://localhost:3000/",
+    customer_email: req.user.email,
+    client_reference_id: req.params.id,
+    metadata: req.body.shippingAddress,
+  });
+  res.json({ message: "success", session });
+});
+
+export {
+  createCashOrder,
+  getSpecificOrder,
+  getAllOrders,
+  createCheckOutSession,
+};
