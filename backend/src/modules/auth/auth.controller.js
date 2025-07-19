@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { userModel } from "../../../database/models/user.model.js";
 import { catchError } from "../../middleware/catchError.js";
 import { AppError } from "../../../src/utils/AppError.js";
+import { sendEmail } from "../../services/emails/sendEmail.js";
 const signup = catchError(async (req, res) => {
   let user = new userModel(req.body);
   await user.save();
@@ -10,13 +11,21 @@ const signup = catchError(async (req, res) => {
     { userId: user._id, role: user.role },
     process.env.JWT_KEY
   );
-  // sendEmail(req.body.email);
+  sendEmail(req.body.email);
   res.json({ message: "success", token });
 });
 
 const signin = catchError(async (req, res, next) => {
   let user = await userModel.findOne({ email: req.body.email });
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
+    if (user.confirmEmail === false) {
+      next(
+        new AppError(
+          "We sent you a verification email, please verify your account ",
+          401
+        )
+      );
+    }
     let token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_KEY
@@ -72,16 +81,16 @@ const allowedTo = (...roles) => {
   });
 };
 
-// const verify = catchError(async (req, res, next) => {
-//   jwt.verify(req.params.token, process.env.JWT_KEY, async (err, decoded) => {
-//     if (err) return next(new AppError(err, 401));
+const verify = catchError(async (req, res, next) => {
+  jwt.verify(req.params.token, process.env.JWT_KEY, async (err, decoded) => {
+    if (err) return next(new AppError(err, 401));
 
-//     await userModel.findOneAndUpdate(
-//       { email: decoded.email },
-//       { verifyEmail: true }
-//     );
-//     res.json({ message: "success" });
-//   });
-// });
+    await userModel.findOneAndUpdate(
+      { email: decoded.email },
+      { confirmEmail: true }
+    );
+    res.json({ message: "success" });
+  });
+});
 
-export { signup, signin, changePassword, protectedRoutes, allowedTo };
+export { signup, signin, changePassword, protectedRoutes, allowedTo, verify };

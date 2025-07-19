@@ -1,4 +1,3 @@
-import { globalError } from "../middleware/globalError.js";
 import addressRouter from "./address/address.routes.js";
 import authRouter from "./auth/auth.routes.js";
 import brandRouter from "./brand/brand.routes.js";
@@ -25,5 +24,4 @@ export const bootstrap = (app) => {
   app.use("/api/v1/carts", cartRouter);
   app.use("/api/v1/orders", orderRouter);
   app.get("/", (req, res) => res.send("Hello with E-commerce App!"));
-  app.use(globalError);
 };

@@ -6,7 +6,7 @@ export const emailTemplate = (token) => {
         <p style="font-size: 16px; color: #555;">
           Please click the button below to confirm your email address.
         </p>
-        <a href="http://localhost:3000/verify/${token}" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background-color: #007BFF; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">
+        <a href="http://localhost:3000/api/v1/auth/verify/${token}" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background-color: #007BFF; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">
           Confirm Email
         </a>
         <p style="margin-top: 30px; font-size: 14px; color: #888;">

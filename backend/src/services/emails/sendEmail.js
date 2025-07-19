@@ -11,10 +11,10 @@ export const sendEmail = async (email) => {
     },
   });
 
-  let token = jwt.sign({ email }, "myNameIsAhmed");
+  let token = jwt.sign({ email }, process.env.JWT_KEY);
 
   const info = await transporter.sendMail({
-    from: '"ahmed" <ahmadzakr450@gmail.com>',
+    from: ` "ahmed" ${process.env.EMAIL_NAME} `,
     to: email,
     subject: "Hello ✔",
     html: emailTemplate(token),
