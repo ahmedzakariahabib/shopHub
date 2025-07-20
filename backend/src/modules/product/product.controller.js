@@ -3,6 +3,7 @@ import { catchError } from "../../middleware/catchError.js";
 import { productModel } from "../../../database/models/product.model.js";
 import { deleteOne } from "../handlers/handlers.js";
 import { ApiFeatures } from "../../utils/apiFeatures.js";
+import { AppError } from "../../utils/AppError.js";
 
 const addProduct = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.title);
@@ -72,7 +73,7 @@ const getAllProducts = catchError(async (req, res, next) => {
 
 const getSingleProduct = catchError(async (req, res, next) => {
   let product = await productModel.findById(req.params.id);
-  !product && res.status(404).json({ message: "product not found" });
+  !product && next(new AppError("product not found", 404));
   product && res.json({ message: "success", product });
 });
 
@@ -85,7 +86,7 @@ const updateProduct = catchError(async (req, res, next) => {
   let product = await productModel.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
   });
-  !product && res.status(404).json({ message: "product not found" });
+  !product && next(new AppError("product not found", 404));
   product && res.json({ message: "success", product });
 });
 

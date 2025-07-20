@@ -32,7 +32,7 @@ const getAllReviews = catchError(async (req, res, next) => {
 
 const getSingleReview = catchError(async (req, res, next) => {
   let review = await reviewModel.findById(req.params.id);
-  !review && res.status(404).json({ message: "review not found" });
+  !review && next(new AppError("review not found", 404));
   review && res.json({ message: "success", review });
 });
 
@@ -44,7 +44,7 @@ const updateReview = catchError(async (req, res, next) => {
       new: true,
     }
   );
-  !review && res.status(404).json({ message: "review not found" });
+  !review && next(new AppError("review not found", 404));
   review && res.json({ message: "success", review });
 });
 
@@ -53,7 +53,7 @@ const deleteReview = catchError(async (req, res, next) => {
     _id: req.params.id,
     user: req.user._id,
   });
-  !review && res.status(404).json({ message: "review not found" });
+  !review && next(new AppError("review not found", 404));
   review && res.json({ message: "success", review });
 });
 

@@ -3,6 +3,7 @@ import { subcategoryModel } from "../../../database/models/subcategory.model.js"
 import { catchError } from "../../middleware/catchError.js";
 import { deleteOne } from "../handlers/handlers.js";
 import { ApiFeatures } from "../../utils/apiFeatures.js";
+import { AppError } from "../../utils/AppError.js";
 const addSubCategory = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
   let subcategory = new subcategoryModel(req.body);
@@ -25,13 +26,12 @@ const getAllSubCategories = catchError(async (req, res, next) => {
     .filter();
 
   let subcategories = await apiFeatures.mongooseQuery;
-
   res.json({ message: "success", page: apiFeatures.pageNumber, subcategories });
 });
 
 const getSingleSubCategory = catchError(async (req, res, next) => {
   let subcategory = await subcategoryModel.findById(req.params.id);
-  !subcategory && res.status(404).json({ message: "subcategory not found" });
+  !subcategory && next(new AppError("subcategory not found", 404));
   subcategory && res.json({ message: "success", subcategory });
 });
 
@@ -42,7 +42,7 @@ const updateSubCategory = catchError(async (req, res, next) => {
     req.body,
     { new: true }
   );
-  !subcategory && res.status(404).json({ message: "subcategory not found" });
+  !subcategory && next(new AppError("subcategory not found", 404));
   subcategory && res.json({ message: "success", subcategory });
 });
 

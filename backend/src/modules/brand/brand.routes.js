@@ -13,18 +13,35 @@ import {
   paramsIdVal,
   updateBrandVal,
 } from "./brand.validation.js";
-
+import { protectedRoutes, allowedTo } from "../auth/auth.controller.js";
 const brandRouter = express.Router();
 
 brandRouter
   .route("/")
-  .post(uploadSingleFile("logo"), validation(addBrandVal), addBrand)
+  .post(
+    protectedRoutes,
+    allowedTo("admin"),
+    uploadSingleFile("logo"),
+    validation(addBrandVal),
+    addBrand
+  )
   .get(getAllBrands);
 
 brandRouter
   .route("/:id")
   .get(validation(paramsIdVal), getSingleBrand)
-  .put(uploadSingleFile("logo"), validation(updateBrandVal), updateBrand)
-  .delete(validation(paramsIdVal), deleteBrand);
+  .put(
+    protectedRoutes,
+    allowedTo("admin"),
+    uploadSingleFile("logo"),
+    validation(updateBrandVal),
+    updateBrand
+  )
+  .delete(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(paramsIdVal),
+    deleteBrand
+  );
 
 export default brandRouter;

@@ -3,6 +3,7 @@ import { categoryModel } from "../../../database/models/category.model.js";
 import { catchError } from "../../middleware/catchError.js";
 import { deleteOne } from "../handlers/handlers.js";
 import { ApiFeatures } from "../../utils/apiFeatures.js";
+import { AppError } from "../../utils/AppError.js";
 
 const addCategory = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
@@ -27,7 +28,7 @@ const getAllCategories = catchError(async (req, res, next) => {
 
 const getSingleCategory = catchError(async (req, res, next) => {
   let category = await categoryModel.findById(req.params.id);
-  !category && res.status(404).json({ message: "Category not found" });
+  !category && next(new AppError("category not found", 404));
   category && res.json({ message: "success", category });
 });
 
@@ -40,7 +41,7 @@ const updateCategory = catchError(async (req, res, next) => {
     req.body,
     { new: true }
   );
-  !category && res.status(404).json({ message: "Category not found" });
+  !category && next(new AppError("category not found", 404));
   category && res.json({ message: "success", category });
 });
 

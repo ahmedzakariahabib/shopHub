@@ -33,10 +33,16 @@ categoryRouter
   .get(validation(paramsIdVal), getSingleCategory)
   .put(
     protectedRoutes,
+    allowedTo("admin"),
     uploadSingleFile("img"),
     validation(updateCategoryVal),
     updateCategory
   )
-  .delete(protectedRoutes, validation(paramsIdVal), deleteCategory);
+  .delete(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(paramsIdVal),
+    deleteCategory
+  );
 
 export default categoryRouter;

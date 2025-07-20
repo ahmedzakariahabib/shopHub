@@ -9,17 +9,39 @@ import {
   deleteUser,
 } from "./user.controller.js";
 import { checkEmail } from "../../middleware/checkEmail.js";
+import { protectedRoutes, allowedTo } from "../auth/auth.controller.js";
 const userRouter = express.Router();
 
 userRouter
   .route("/")
-  .post(validation(addUserVal), checkEmail, addUser)
-  .get(getAllUsers);
+  .post(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(addUserVal),
+    checkEmail,
+    addUser
+  )
+  .get(protectedRoutes, allowedTo("admin"), getAllUsers);
 
 userRouter
   .route("/:id")
-  .get(validation(paramsIdVal), getSingleUser)
-  .put(validation(updateUserVal), updateUser)
-  .delete(validation(paramsIdVal), deleteUser);
+  .get(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(paramsIdVal),
+    getSingleUser
+  )
+  .put(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(updateUserVal),
+    updateUser
+  )
+  .delete(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(paramsIdVal),
+    deleteUser
+  );
 
 export default userRouter;

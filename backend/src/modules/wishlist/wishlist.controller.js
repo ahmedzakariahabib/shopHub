@@ -1,5 +1,6 @@
 import { catchError } from "../../middleware/catchError.js";
 import { userModel } from "../../../database/models/user.model.js";
+import { AppError } from "../../utils/AppError.js";
 const addToWishlist = catchError(async (req, res, next) => {
   //array مفيش اختلاف فى حاله الاوبجكت الاختلاف فى حاله
   //addToSet if item exist in wishlist don't add it again
@@ -14,7 +15,7 @@ const addToWishlist = catchError(async (req, res, next) => {
       }
     )
     .populate("wishlist");
-  !wishlist && res.status(404).json({ message: "wishlist not found" });
+  !wishlist && next(new AppError("wishlist not found", 404));
   wishlist && res.json({ message: "success", wishlist: wishlist.wishlist });
 });
 
@@ -30,7 +31,7 @@ const removeFromWishlist = catchError(async (req, res, next) => {
       }
     )
     .populate("wishlist");
-  !wishlist && res.status(404).json({ message: "wishlist not found" });
+  !wishlist && next(new AppError("wishlist not found", 404));
   wishlist && res.json({ message: "success", wishlist: wishlist.wishlist });
 });
 
@@ -38,7 +39,7 @@ const getLoggedUserWishlist = catchError(async (req, res, next) => {
   let { wishlist } = await userModel
     .findById(req.user._id)
     .populate("wishlist");
-  !wishlist && res.status(404).json({ message: "wishlist not found" });
+  !wishlist && next(new AppError("wishlist not found", 404));
   wishlist && res.json({ message: "success", wishlist });
 });
 

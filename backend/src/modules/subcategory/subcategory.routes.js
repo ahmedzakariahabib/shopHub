@@ -12,18 +12,33 @@ import {
   updateSubCategory,
   deleteSubCategory,
 } from "./subcategory.controller.js";
-
+import { protectedRoutes, allowedTo } from "../auth/auth.controller.js";
 const subCategoryRouter = express.Router({ mergeParams: true });
 
 subCategoryRouter
   .route("/")
-  .post(validation(addSubCategoryVal), addSubCategory)
+  .post(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(addSubCategoryVal),
+    addSubCategory
+  )
   .get(getAllSubCategories);
 
 subCategoryRouter
   .route("/:id")
   .get(validation(paramsIdVal), getSingleSubCategory)
-  .put(validation(updateSubCategoryVal), updateSubCategory)
-  .delete(validation(paramsIdVal), deleteSubCategory);
+  .put(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(updateSubCategoryVal),
+    updateSubCategory
+  )
+  .delete(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(paramsIdVal),
+    deleteSubCategory
+  );
 
 export default subCategoryRouter;

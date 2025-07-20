@@ -14,12 +14,14 @@ import {
   paramsIdVal,
   updateProductVal,
 } from "./product.validation.js";
-
+import { protectedRoutes, allowedTo } from "../auth/auth.controller.js";
 const productRouter = express.Router();
 
 productRouter
   .route("/")
   .post(
+    protectedRoutes,
+    allowedTo("admin"),
     uploadFields([
       { name: "imgCover", maxCount: 1 },
       { name: "images", maxCount: 10 },
@@ -33,6 +35,8 @@ productRouter
   .route("/:id")
   .get(validation(paramsIdVal), getSingleProduct)
   .put(
+    protectedRoutes,
+    allowedTo("admin"),
     uploadFields([
       { name: "imgCover", maxCount: 1 },
       { name: "images", maxCount: 10 },
@@ -40,6 +44,11 @@ productRouter
     validation(updateProductVal),
     updateProduct
   )
-  .delete(validation(paramsIdVal), deleteProduct);
+  .delete(
+    protectedRoutes,
+    allowedTo("admin"),
+    validation(paramsIdVal),
+    deleteProduct
+  );
 
 export default productRouter;

@@ -1,16 +1,16 @@
 process.on("uncaughtException", (err) => {
   console.log("error", err);
 });
-import { dbConnection } from "./database/dbConnection.js";
+import { globalError } from "./src/middleware/globalError.js";
 import { bootstrap } from "./src/modules/index.routes.js";
+import { dbConnection } from "./database/dbConnection.js";
+import { AppError } from "./src/utils/AppError.js";
+import rateLimit from "express-rate-limit";
 import express from "express";
+import helmet from "helmet";
 import dotenv from "dotenv";
 import cors from "cors";
-import helmet from "helmet";
 import hpp from "hpp";
-import rateLimit from "express-rate-limit";
-import { AppError } from "./src/utils/AppError.js";
-import { globalError } from "./src/middleware/globalError.js";
 dotenv.config();
 const app = express();
 const port = 3000;

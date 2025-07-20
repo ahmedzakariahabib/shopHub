@@ -30,7 +30,7 @@ const getAllCoupons = catchError(async (req, res, next) => {
 
 const getSingleCoupon = catchError(async (req, res, next) => {
   let coupon = await couponModel.findById(req.params.id);
-  !coupon && res.status(404).json({ message: "coupon not found" });
+  !coupon && next(new AppError("coupon not found", 404));
   coupon && res.json({ message: "success", coupon });
 });
 
@@ -42,7 +42,7 @@ const updateCoupon = catchError(async (req, res, next) => {
       new: true,
     }
   );
-  !coupon && res.status(404).json({ message: "coupon not found" });
+  !coupon && next(new AppError("coupon not found", 404));
   coupon && res.json({ message: "success", coupon });
 });
 

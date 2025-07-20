@@ -1,5 +1,7 @@
 import { catchError } from "../../middleware/catchError.js";
 import { userModel } from "../../../database/models/user.model.js";
+import { AppError } from "../../utils/AppError.js";
+
 const addAddress = catchError(async (req, res, next) => {
   let address = await userModel.findByIdAndUpdate(
     req.user._id,
@@ -8,8 +10,8 @@ const addAddress = catchError(async (req, res, next) => {
       new: true,
     }
   );
-
-  !address && res.status(404).json({ message: "address not found" });
+  console.log(addAddress);
+  !address && next(new AppError("address not found", 404));
   address && res.json({ message: "success", address: address.addresses });
 });
 
@@ -22,7 +24,7 @@ const removeAddress = catchError(async (req, res, next) => {
     }
   );
 
-  !address && res.status(404).json({ message: "address not found" });
+  !address && next(new AppError("address not found", 404));
   address && res.json({ message: "success", address: address.addresses });
 });
 

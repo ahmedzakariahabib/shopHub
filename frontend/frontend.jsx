@@ -1,5 +1,5 @@
 function frontend() {
-  return <div>hello with fullstack</div>;
+  return <div>WIP</div>;
 }
 
 export default frontend;

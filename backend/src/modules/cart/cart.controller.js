@@ -34,16 +34,17 @@ const addToCart = catchError(async (req, res, next) => {
     });
     calcTotalPrice(cart);
     await cart.save();
-    !cart && res.status(404).json({ message: "Cart not found" });
-
+    !cart && next(new AppError("cart not found", 404));
     cart && res.json({ message: "success", cart });
   } else {
     let item = isCartExist.cartItems.find(
       (item) => item.product == req.body.product
     );
     if (item) {
-      //here there problem i will slove this in sometime
-      if (item.quantity >= product.quantity)
+      if (
+        item.quantity > product.quantity ||
+        item.quantity + req.body.quantity > product.quantity
+      )
         return next(new AppError("sold out"));
       item.quantity += req.body.quantity || 1;
     } else isCartExist.cartItems.push(req.body);
@@ -64,15 +65,25 @@ const removeItemFromCart = catchError(async (req, res, next) => {
   );
   calcTotalPrice(cart);
   await cart.save();
-  !cart && res.status(404).json({ message: "cart not found" });
+  !cart && next(new AppError("cart not found", 404));
   cart && res.json({ message: "success", cart });
 });
 
 const updateQuantiy = catchError(async (req, res, next) => {
   let cart = await cartModel.findOne({ user: req.user._id });
-  !cart && res.status(404).json({ message: "cart not found" });
-  let item = cart.cartItems.find((item) => item._id == req.params.id);
+  !cart && next(new AppError("cart not found", 404));
 
+  const productId = cart.cartItems.find(
+    (item) => item._id.toString() === req.params.id
+  )?.product;
+
+  let product = await productModel.findById(productId);
+  if (!product) return next(new AppError("product not found", 404));
+
+  if (req.body.quantity > product.quantity)
+    return next(new AppError("sold out"));
+
+  let item = cart.cartItems.find((item) => item._id == req.params.id);
   if (!item) return next(new AppError("item not found", 404));
   item.quantity = req.body.quantity;
   calcTotalPrice(cart);
@@ -85,13 +96,13 @@ const getLoggedUserCart = catchError(async (req, res, next) => {
     .findOne({ user: req.user._id })
     .populate("cartItems.product");
 
-  !cart && res.status(404).json({ message: "cart not found" });
+  !cart && next(new AppError("cart not found", 404));
   cart && res.json({ message: "success", cart });
 });
 
 const clearUserCart = catchError(async (req, res, next) => {
   let cart = await cartModel.findOneAndDelete({ user: req.user._id });
-  !cart && res.status(404).json({ message: "cart not found" });
+  !cart && next(new AppError("cart not found", 404));
   cart && res.json({ message: "success", cart });
 });
 
