@@ -7,12 +7,13 @@ import { sendEmail } from "../../services/emails/sendEmail.js";
 const signup = catchError(async (req, res) => {
   let user = new userModel(req.body);
   await user.save();
-  let token = jwt.sign(
-    { userId: user._id, role: user.role },
-    process.env.JWT_KEY
-  );
+  // let token = jwt.sign(
+  //   { userId: user._id, role: user.role },
+  //   process.env.JWT_KEY
+  // );
   sendEmail(req.body.email);
-  res.json({ message: "success", token });
+  // res.json({ message: "success", token, user });
+  res.json({ message: "success" });
 });
 
 const signin = catchError(async (req, res, next) => {
@@ -30,7 +31,7 @@ const signin = catchError(async (req, res, next) => {
       { userId: user._id, role: user.role },
       process.env.JWT_KEY
     );
-    return res.json({ message: "success", token });
+    return res.json({ message: "success", token, user });
   }
   // res.json({ message: "incorret email or password" });
 
