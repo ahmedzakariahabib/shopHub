@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { jwtDecode } from "jwt-decode";
-import useCategoryStore from "../_store/useCategoryStore";
+import toast from "react-hot-toast";
+import useBrandStore from "../_store/useBrandStore";
 import useAuthStore from "../_store/authStore";
 
-const CategoriesList = () => {
+const BrandsList = () => {
   const router = useRouter();
-  const { categories, loading, error, fetchCategories, deleteCategory } =
-    useCategoryStore();
+  const { brands, loading, error, fetchBrands, deleteBrand } = useBrandStore();
   const [isAdmin, setIsAdmin] = useState(false);
   const { role: stateRole } = useAuthStore();
 
@@ -23,7 +23,6 @@ const CategoriesList = () => {
       if (!token) return null;
 
       const decoded = jwtDecode(token);
-
       return decoded?.role || null;
     } catch (error) {
       console.error("Error decoding token:", error);
@@ -35,19 +34,22 @@ const CategoriesList = () => {
     const role = getRoleFromToken();
     const isUserAdmin = role === "admin" && stateRole === "admin";
     setIsAdmin(isUserAdmin);
-    fetchCategories();
-  }, [fetchCategories, stateRole]);
+    fetchBrands();
+  }, [fetchBrands, stateRole]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this category?"))
-      return;
-    const success = await deleteCategory(id);
-    if (success) {
-      fetchCategories();
+  const handleDelete = async (brandId) => {
+    if (!window.confirm("Are you sure you want to delete this brand?")) return;
+    try {
+      const success = await deleteBrand(brandId);
+      if (success) {
+        fetchBrands();
+      }
+    } catch (error) {
+      toast.error("Failed to delete brand");
     }
   };
 
-  if (loading && !categories.length) {
+  if (loading && !brands.length) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#16a34a]"></div>
@@ -101,30 +103,30 @@ const CategoriesList = () => {
                 />
               </svg>
               <h3 className="text-2xl font-bold text-gray-800 tracking-tight">
-                Product Categories
+                Brands
               </h3>
             </div>
             <p className="mt-2 text-sm text-gray-600 pl-9 border-l-2 border-[#16a34a]">
-              Browse and manage all available product categories in your store
+              List of all available brands
             </p>
           </div>
           {isAdmin && (
             <button
-              onClick={() => router.push("/categories/addCategory")}
+              onClick={() => router.push("/brands/addBrand")}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#16a34a] hover:bg-[#65a30d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16a34a] transition-colors"
             >
-              Add New Category
+              Add New Brand
             </button>
           )}
         </div>
 
-        {categories.length > 0 ? (
+        {brands.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-center text-lg font-medium text-black uppercase tracking-wider">
-                    Image
+                    Logo
                   </th>
                   <th className="px-6 py-3 text-center text-lg font-medium text-black uppercase tracking-wider">
                     Name
@@ -135,22 +137,14 @@ const CategoriesList = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {categories.map((category) => (
-                  <tr
-                    key={category._id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                  >
-                    <td
-                      className="px-6 justify-center flex  py-4 whitespace-nowrap"
-                      onClick={() =>
-                        router.push(`/subcategories/${category._id}`)
-                      }
-                    >
-                      {category.image?.startsWith("http") ? (
-                        <div className="relative  h-10 w-10 rounded-md overflow-hidden">
+                {brands.map((brand) => (
+                  <tr key={brand._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 flex justify-center whitespace-nowrap">
+                      {brand.logo.startsWith("http") ? (
+                        <div className="relative h-10 w-10 rounded-md overflow-hidden">
                           <Image
-                            src={category.image}
-                            alt={category.name}
+                            src={brand.logo}
+                            alt={brand.name}
                             fill
                             className="object-cover"
                           />
@@ -174,25 +168,17 @@ const CategoriesList = () => {
                         </div>
                       )}
                     </td>
-                    <td
-                      className="px-6 py-4 whitespace-nowrap"
-                      onClick={() =>
-                        router.push(`/subcategories/${category._id}`)
-                      }
-                    >
-                      <div className="text-sm text-center font-medium text-gray-900">
-                        {category.name}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-center  font-medium text-gray-900">
+                        {brand.name}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-4  justify-center   ">
+                      <div className="flex space-x-4 justify-center">
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(
-                              `/categories/categoriesDetails/${category._id}`
-                            );
-                          }}
+                          onClick={() =>
+                            router.push(`/brands/brandDetails/${brand._id}`)
+                          }
                           className="text-[#16a34a] hover:text-[#65a30d] transition-colors"
                         >
                           Details
@@ -200,21 +186,15 @@ const CategoriesList = () => {
                         {isAdmin && (
                           <>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(
-                                  `/categories/editCategory/${category._id}`
-                                );
-                              }}
+                              onClick={() =>
+                                router.push(`/brands/editBrand/${brand._id}`)
+                              }
                               className="text-blue-600 hover:text-blue-800 transition-colors"
                             >
                               Edit
                             </button>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(category._id);
-                              }}
+                              onClick={() => handleDelete(brand._id)}
                               className="text-red-600 hover:text-red-800 transition-colors"
                             >
                               Delete
@@ -245,15 +225,15 @@ const CategoriesList = () => {
               ></path>
             </svg>
             <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No categories found
+              No brands found
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              Get started by creating a new category.
+              Get started by creating a new brand.
             </p>
             {isAdmin && (
               <div className="mt-6">
                 <button
-                  onClick={() => router.push("/categories/addCategory")}
+                  onClick={() => router.push("/brands/addBrand")}
                   className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#16a34a] hover:bg-[#65a30d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16a34a] transition-colors"
                 >
                   <svg
@@ -268,7 +248,7 @@ const CategoriesList = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  New Category
+                  New Brand
                 </button>
               </div>
             )}
@@ -279,4 +259,4 @@ const CategoriesList = () => {
   );
 };
 
-export default CategoriesList;
+export default BrandsList;

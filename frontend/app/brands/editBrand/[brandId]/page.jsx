@@ -1,17 +1,36 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
-import useCategoryStore from "@/app/_store/useCategoryStore";
+import useBrandStore from "@/app/_store/useBrandStore";
 
-const CreateCategoryForm = () => {
+const EditBrandForm = () => {
   const router = useRouter();
+  const { brandId: id } = useParams();
   const [name, setName] = useState("");
   const [imagePreview, setImagePreview] = useState("");
+  const [currentImage, setCurrentImage] = useState("");
   const imageInputRef = useRef(null);
-  const { loading, createCategory } = useCategoryStore();
+
+  const { loading, currentBrand, fetchBrand, updateBrand } = useBrandStore();
+
+  useEffect(() => {
+    if (id) {
+      fetchBrand(id);
+    }
+  }, [id, fetchBrand]);
+
+  useEffect(() => {
+    if (currentBrand) {
+      setName(currentBrand.name);
+      if (currentBrand.img) {
+        setCurrentImage(currentBrand.img);
+        setImagePreview(currentBrand.img);
+      }
+    }
+  }, [currentBrand]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -26,7 +45,14 @@ const CreateCategoryForm = () => {
       };
       reader.readAsDataURL(file);
     } else {
-      setImagePreview("");
+      setImagePreview(currentImage);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview("");
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
     }
   };
 
@@ -35,11 +61,11 @@ const CreateCategoryForm = () => {
     const imageFile = imageInputRef.current?.files?.[0];
 
     if (!name.trim()) {
-      toast.error("Category name is required");
+      toast.error("Brand name is required");
       return;
     }
 
-    const success = await createCategory(name, imageFile);
+    const success = await updateBrand(id, name, imageFile);
     if (success) {
       router.push("/");
     }
@@ -50,7 +76,7 @@ const CreateCategoryForm = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4   sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-2xl mx-auto">
         {/* Header Section */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -88,15 +114,15 @@ const CreateCategoryForm = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth="2"
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
                     <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
-                      Create New Category
+                      Update Brand
                     </h1>
                   </div>
                   <p className="mt-2 text-sm text-gray-600 pl-9 border-l-2 border-[#16a34a]">
-                    Add a new category to organize your products in the store
+                    Modify the brand details and settings below
                   </p>
                 </div>
               </div>
@@ -106,10 +132,10 @@ const CreateCategoryForm = () => {
           {/* Form Section */}
           <div className="px-6 py-8">
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Category Name Input */}
+              {/* Brand Name Input */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
-                  Category Name <span className="text-red-500">*</span>
+                  Brand Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -117,7 +143,7 @@ const CreateCategoryForm = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#16a34a] focus:border-[#16a34a] transition-colors bg-white shadow-sm"
-                    placeholder="Enter category name"
+                    placeholder="Enter brand name"
                     required
                     disabled={loading}
                   />
@@ -132,7 +158,7 @@ const CreateCategoryForm = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth="2"
-                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                        d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
                   </div>
@@ -142,7 +168,7 @@ const CreateCategoryForm = () => {
               {/* Image Upload Section */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
-                  Category Image
+                  Brand Image
                   <span className="text-xs text-gray-500 ml-2">
                     (Optional - Max 2MB)
                   </span>
@@ -184,17 +210,42 @@ const CreateCategoryForm = () => {
                   </label>
                 </div>
 
-                {/* Image Preview */}
+                {/* Current/Preview Image */}
                 {imagePreview && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm font-medium text-gray-700 mb-3">
-                      Preview:
-                    </p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-gray-700">
+                        {currentImage === imagePreview
+                          ? "Current Image:"
+                          : "Preview:"}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="inline-flex items-center px-3 py-1 border border-red-300 rounded-md text-xs font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                        title="Remove image"
+                      >
+                        <svg
+                          className="w-3 h-3 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        Remove
+                      </button>
+                    </div>
                     <div className="flex items-center justify-center">
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-white shadow-lg">
                         <Image
                           src={imagePreview}
-                          alt="Category preview"
+                          alt="Brand preview"
                           fill
                           className="object-cover"
                         />
@@ -241,7 +292,7 @@ const CreateCategoryForm = () => {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         />
                       </svg>
-                      Creating Category...
+                      Updating Brand...
                     </span>
                   ) : (
                     <span className="flex items-center">
@@ -255,10 +306,10 @@ const CreateCategoryForm = () => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth="2"
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      Create Category
+                      Update Brand
                     </span>
                   )}
                 </button>
@@ -271,4 +322,4 @@ const CreateCategoryForm = () => {
   );
 };
 
-export default CreateCategoryForm;
+export default EditBrandForm;

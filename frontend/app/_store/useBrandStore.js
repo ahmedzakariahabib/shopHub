@@ -3,9 +3,9 @@
 import { create } from "zustand";
 import toast from "react-hot-toast";
 
-const useSubcategoryStore = create((set, get) => ({
-  subcategories: [],
-  currentSubcategory: null,
+const useBrandStore = create((set, get) => ({
+  brands: [],
+  currentBrand: null,
   loading: false,
   error: null,
 
@@ -21,29 +21,26 @@ const useSubcategoryStore = create((set, get) => ({
     }
   },
 
-  fetchSubcategories: async (categoryId) => {
+  fetchBrands: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${categoryId}/subcategories`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch("http://localhost:3000/api/v1/brands", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch subcategories");
+        throw new Error(data.message || "Failed to fetch brands");
       }
 
       set({
-        subcategories: data.subcategories || [],
+        brands: data.Brands || [],
         loading: false,
       });
-      return data.subcategories;
+      return data.Brands;
     } catch (error) {
       toast.error(error.message);
       set({
@@ -54,11 +51,11 @@ const useSubcategoryStore = create((set, get) => ({
     }
   },
 
-  fetchSubcategory: async (subcategoryId) => {
-    set({ loading: true, error: null, currentSubcategory: null });
+  fetchBrand: async (id) => {
+    set({ loading: true, error: null, currentBrand: null });
     try {
       const response = await fetch(
-        `http://localhost:3000/api/v1/subcategories/${subcategoryId}`,
+        `http://localhost:3000/api/v1/brands/${id}`,
         {
           method: "GET",
           headers: {
@@ -69,14 +66,15 @@ const useSubcategoryStore = create((set, get) => ({
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch subcategory");
+        throw new Error(data.message || "Failed to fetch brand");
       }
 
       set({
-        currentSubcategory: data.subcategory,
+        currentBrand: data.brand,
         loading: false,
       });
-      return data.subcategory;
+
+      return data.brand;
     } catch (error) {
       toast.error(error.message);
       set({
@@ -87,39 +85,33 @@ const useSubcategoryStore = create((set, get) => ({
     }
   },
 
-  createSubcategory: async (categoryId, name) => {
+  createBrand: async (name, imageFile) => {
     set({ loading: true, error: null });
     try {
       const token = get().getAuthToken();
       if (!token) throw new Error("Authentication required. Please login.");
 
-      const response = await fetch(
-        `http://localhost:3000/api/v1/subcategories`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            token: `  ${token.trim()}`,
-          },
-          body: JSON.stringify({
-            name: name,
-            category: categoryId,
-          }),
-        }
-      );
+      const formData = new FormData();
+      formData.append("name", name);
+      if (imageFile) formData.append("logo", imageFile);
+
+      const response = await fetch("http://localhost:3000/api/v1/brands", {
+        method: "POST",
+        headers: { token: `  ${token}` },
+        body: formData,
+      });
 
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || "Failed to create subcategory");
+        throw new Error(data.message || "Failed to create brand");
       }
 
       set((state) => ({
-        subcategories: [...state.subcategories, data.subcategory],
+        brands: [...state.brands, data.brand],
         loading: false,
       }));
-
-      return data.subcategory;
+      toast.success("Brand created successfully");
+      return data.brand;
     } catch (error) {
       toast.error(error.message);
       set({
@@ -130,59 +122,57 @@ const useSubcategoryStore = create((set, get) => ({
     }
   },
 
-  updateSubcategory: async (subcategoryId, name) => {
+  updateBrand: async (id, name, imageFile) => {
     set({ loading: true, error: null });
     try {
-      console.log("df", subcategoryId, name);
       const token = get().getAuthToken();
       if (!token) throw new Error("Authentication required. Please login.");
 
+      const formData = new FormData();
+      formData.append("name", name);
+      if (imageFile) formData.append("logo", imageFile);
+
       const response = await fetch(
-        `http://localhost:3000/api/v1/subcategories/${subcategoryId}`,
+        `http://localhost:3000/api/v1/brands/${id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            token: `${token}`,
-          },
-          body: JSON.stringify({
-            name: name,
-          }),
+          headers: { token: `  ${token}` },
+          body: formData,
         }
       );
 
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || "Failed to update subcategory");
+        throw new Error(data.message || "Failed to update brand");
       }
 
       set((state) => ({
-        subcategories: state.subcategories.map((subcat) =>
-          subcat._id === subcategoryId ? data.subcategory : subcat
+        brands: state.brands.map((brand) =>
+          brand._id === id ? data.brand : brand
         ),
-        currentSubcategory: data.subcategory,
+        currentBrand: data.brand,
         loading: false,
       }));
-
-      return data.subcategory;
+      toast.success("Brand updated successfully");
+      return data.brand;
     } catch (error) {
+      toast.error(error.message);
       set({
         error: error.message,
         loading: false,
       });
-      throw error; // Re-throw to handle in component
+      return null;
     }
   },
 
-  deleteSubcategory: async (subcategoryId) => {
+  deleteBrand: async (id) => {
     set({ loading: true, error: null });
     try {
       const token = get().getAuthToken();
       if (!token) throw new Error("Authentication required. Please login.");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/subcategories/${subcategoryId}`,
+        `http://localhost:3000/api/v1/brands/${id}`,
         {
           method: "DELETE",
           headers: { token: ` ${token}` },
@@ -191,20 +181,16 @@ const useSubcategoryStore = create((set, get) => ({
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || "Failed to delete subcategory");
+        throw new Error(data.message || "Failed to delete brand");
       }
 
       set((state) => ({
-        subcategories: state.subcategories.filter(
-          (subcat) => subcat._id !== subcategoryId
-        ),
-        currentSubcategory:
-          state.currentSubcategory?._id === subcategoryId
-            ? null
-            : state.currentSubcategory,
+        brands: state.brands.filter((brand) => brand._id !== id),
+        currentBrand:
+          state.currentBrand?._id === id ? null : state.currentBrand,
         loading: false,
       }));
-
+      toast.success("Brand deleted successfully");
       return true;
     } catch (error) {
       toast.error(error.message);
@@ -216,8 +202,8 @@ const useSubcategoryStore = create((set, get) => ({
     }
   },
 
-  clearCurrentSubcategory: () => set({ currentSubcategory: null }),
+  clearCurrentBrand: () => set({ currentBrand: null }),
   clearError: () => set({ error: null }),
 }));
 
-export default useSubcategoryStore;
+export default useBrandStore;

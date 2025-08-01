@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { jwtDecode } from "jwt-decode";
-
 import toast from "react-hot-toast";
 import useSubcategoryStore from "@/app/_store/useSubCategoryStore";
 import useAuthStore from "@/app/_store/authStore";
@@ -50,7 +49,7 @@ const SubcategoriesList = () => {
   const handleDelete = async (subcategoryId) => {
     if (!window.confirm("Are you sure you want to delete this subcategory?"))
       return;
-    const success = await deleteSubcategory(categoryId, subcategoryId);
+    const success = await deleteSubcategory(subcategoryId);
     if (success) {
       toast.success("Subcategory deleted successfully");
       fetchSubcategories(categoryId);
@@ -60,14 +59,14 @@ const SubcategoriesList = () => {
   if (loading && !subcategories.length) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#16a34a]"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border-l-4 border-red-500 p-4">
+      <div className="bg-red-50 border-l-4 border-red-500 p-4 my-6 rounded ">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg
@@ -92,167 +91,181 @@ const SubcategoriesList = () => {
   }
 
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-200">
-        <div>
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Subcategories
-          </h3>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">
-            List of all available subcategories
-          </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 my-20">
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <div className="flex items-center gap-3">
+              <svg
+                className="w-6 h-6 text-[#16a34a]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              <h3 className="text-xl font-bold text-gray-800">Subcategories</h3>
+            </div>
+            <p className="mt-2 text-sm text-gray-600 pl-9">
+              List of all available subcategories
+            </p>
+          </div>
+          {isAdmin && (
+            <button
+              onClick={() => router.push(`/subcategories/addSubCategory`)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#16a34a] hover:bg-[#65a30d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16a34a] transition-colors"
+            >
+              Add New Subcategory
+            </button>
+          )}
         </div>
-        {isAdmin && (
-          <button
-            onClick={() => router.push(`/subcategories/addSubCategory`)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Add New Subcategory
-          </button>
-        )}
-      </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Image
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {subcategories.map((subcategory) => (
-              <tr key={subcategory._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {subcategory.category.image ? (
-                    <div className="relative h-10 w-10 rounded-md overflow-hidden">
-                      <Image
-                        src={subcategory.category.image}
-                        alt={subcategory.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center">
-                      <svg
-                        className="h-6 w-6 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        ></path>
-                      </svg>
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {subcategory.name}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() =>
-                        router.push(
-                          `/subcategories/subCategoryDetails/${subcategory._id}`
-                        )
-                      }
-                      className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Details
-                    </button>
-                    {isAdmin && (
-                      <>
+        {subcategories.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-center  text-xs font-medium text-black uppercase tracking-wider">
+                    Image
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-black uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-black uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {subcategories.map((subcategory) => (
+                  <tr key={subcategory._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 flex justify-center whitespace-nowrap">
+                      {subcategory.category?.image ? (
+                        <div className="relative   h-10 w-10 rounded-md overflow-hidden">
+                          <Image
+                            src={subcategory.category.image}
+                            alt={subcategory.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center">
+                          <svg
+                            className="h-6 w-6 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            ></path>
+                          </svg>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-center text-gray-900">
+                        {subcategory.name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-4 justify-center">
                         <button
                           onClick={() =>
                             router.push(
-                              `/subcategories/editSubCategory/${subcategory._id}`
+                              `/subcategories/subCategoryDetails/${subcategory._id}`
                             )
                           }
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-[#16a34a] hover:text-[#65a30d] transition-colors"
                         >
-                          Edit
+                          Details
                         </button>
-                        <button
-                          onClick={() => handleDelete(subcategory._id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {!loading && subcategories.length === 0 && (
-        <div className="text-center py-12">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
-          </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
-            No subcategories
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Get started by creating a new subcategory.
-          </p>
-
-          {isAdmin && (
-            <div className="mt-6">
-              <button
-                onClick={() =>
-                  router.push(`/categories/${categoryId}/subcategories/add`)
-                }
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg
-                  className="-ml-1 mr-2 h-5 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+                        {isAdmin && (
+                          <>
+                            <button
+                              onClick={() =>
+                                router.push(
+                                  `/subcategories/editSubCategory/${subcategory._id}`
+                                )
+                              }
+                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(subcategory._id)}
+                              className="text-red-600 hover:text-red-800 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              No subcategories found
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Get started by creating a new subcategory.
+            </p>
+            {isAdmin && (
+              <div className="mt-6">
+                <button
+                  onClick={() =>
+                    router.push(`/categories/${categoryId}/subcategories/add`)
+                  }
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#16a34a] hover:bg-[#65a30d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16a34a] transition-colors"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                New Subcategory
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+                  <svg
+                    className="-ml-1 mr-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  New Subcategory
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
