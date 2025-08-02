@@ -11,11 +11,39 @@ import {
   PhoneIcon,
   EnvelopeIcon,
 } from "@heroicons/react/24/outline";
+import useAuthStore from "../_store/authStore";
+import { jwtDecode } from "jwt-decode";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(3);
   const [name, setName] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(null);
+  const { role: stateRole } = useAuthStore();
+
+  const getRoleFromToken = () => {
+    try {
+      const authStorage = localStorage.getItem("auth-storage");
+      if (!authStorage) return null;
+
+      const { token } = JSON.parse(authStorage)?.state || {};
+      if (!token) return null;
+
+      const decoded = jwtDecode(token);
+
+      return decoded?.role || null;
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const role = getRoleFromToken();
+    const isUserAdmin = role === "admin" && stateRole === "admin";
+    setIsAdmin(isUserAdmin);
+  }, [stateRole]);
+
   useEffect(() => {
     const authStorage = localStorage.getItem("auth-storage");
     if (authStorage) {
@@ -47,24 +75,24 @@ const Navbar = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <Link
-                href="/"
+                href="/dashboard"
                 className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
               >
                 Home
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
               </Link>
               <Link
-                href="/categories"
+                href="/dashboard"
                 className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
               >
                 Categories
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
               </Link>
               <Link
-                href="/deals"
+                href="/dashboard"
                 className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
               >
-                Deals
+                brands
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
               </Link>
               <Link
@@ -74,13 +102,18 @@ const Navbar = () => {
                 About
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
               </Link>
-              <Link
-                href="/contact"
-                className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
-              >
-                Contact
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
-              </Link>
+
+              {isAdmin ? (
+                <Link
+                  href="/users"
+                  className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
+                >
+                  users
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
+                </Link>
+              ) : (
+                ""
+              )}
             </div>
 
             {/* Search Bar */}
@@ -159,7 +192,7 @@ const Navbar = () => {
             <div className="md:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
                 <Link
-                  href="/"
+                  href="/dashboard"
                   className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
                 >
                   Home
@@ -174,7 +207,7 @@ const Navbar = () => {
                   href="/deals"
                   className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
                 >
-                  Deals
+                  Brands
                 </Link>
                 <Link
                   href="/about"
@@ -182,22 +215,16 @@ const Navbar = () => {
                 >
                   About
                 </Link>
-                <Link
-                  href="/contact"
-                  className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
-                >
-                  Contact
-                </Link>
-                {/* {name ? (
-                  name
-                ) : (
+                {isAdmin ? (
                   <Link
-                    href="/signup"
-                    className="block px-3  py-2 bg-[#16a34a] text-white rounded-md font-medium hover:bg-[#65a30d] transition-colors mt-4"
+                    href="/"
+                    className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
                   >
-                    Sign Up
+                    users
                   </Link>
-                )} */}
+                ) : (
+                  ""
+                )}
               </div>
             </div>
           )}

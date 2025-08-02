@@ -1,11 +1,5 @@
-import BrandsList from "./_components/brands";
-import CategoriesPage from "./_components/categories";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div>
-      <CategoriesPage />
-      <BrandsList />
-    </div>
-  );
+  redirect("/dashboard");
 }
