@@ -64,6 +64,10 @@ const SubcategoriesList = () => {
     );
   }
 
+  const handleSubCategoryClick = (subcategoryID) => {
+    router.push(`/products?subcategory=${subcategoryID}`);
+  };
+
   if (error) {
     return (
       <div className="bg-red-50 border-l-4 border-red-500 p-4 my-6 rounded ">
@@ -143,7 +147,11 @@ const SubcategoriesList = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {subcategories.map((subcategory) => (
-                  <tr key={subcategory._id} className="hover:bg-gray-50">
+                  <tr
+                    key={subcategory._id}
+                    className="hover:bg-gray-50"
+                    onClick={() => handleSubCategoryClick(subcategory._id)}
+                  >
                     <td className="px-6 py-4 flex justify-center whitespace-nowrap">
                       {subcategory.category?.image ? (
                         <div className="relative   h-10 w-10 rounded-md overflow-hidden">

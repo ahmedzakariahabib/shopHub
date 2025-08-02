@@ -11,6 +11,18 @@ const useAuthStore = create(
       loading: false,
       error: null,
 
+      getAuthToken: () => {
+        try {
+          const authStorage = localStorage.getItem("auth-storage");
+          if (!authStorage) return null;
+          const parsed = JSON.parse(authStorage);
+          return parsed?.state?.token || null;
+        } catch (error) {
+          console.error("Failed to get auth token:", error);
+          return null;
+        }
+      },
+
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
@@ -81,43 +93,56 @@ const useAuthStore = create(
         }
       },
 
-      changePassword: async (oldPassword, newPassword) => {
+      changePassword: async (passwords) => {
         set({ loading: true, error: null });
-        try {
-          const { token } = get();
-          if (!token) throw new Error("Not authenticated");
 
+        try {
+          const token = get().getAuthToken();
+          if (!token) {
+            throw new Error("Authentication required. Please login.");
+          }
+          const { oldPassword, newPassword } = passwords;
+          const payload = {
+            password: String(oldPassword || ""),
+            newPassword: String(newPassword || ""),
+          };
           const response = await fetch(
             "http://localhost:3000/api/v1/auth/changePassword",
             {
-              method: "POST",
+              method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                token: `${token}`,
               },
-              body: JSON.stringify({ oldPassword, newPassword }),
+              body: JSON.stringify(payload),
             }
           );
-
           const data = await response.json();
-
-          if (!response.ok) {
+          console.log(data);
+          if (!response.ok || data.message === "incorret email or password") {
             throw new Error(data.message || "Password change failed");
           }
+          set({ loading: false, error: null });
+          toast.success("Password updated successfully");
 
-          set({ loading: false });
-          return true;
+          return { success: true, data };
         } catch (error) {
+          toast.error(error.message);
           set({
             error: error.message || "Password change failed",
             loading: false,
           });
-          return false;
+          return { success: false, error: error.message };
         }
       },
-
       logout: () => {
-        set({ user: null, token: null, role: null });
+        set({
+          name: null,
+          token: null,
+          role: null,
+          error: null,
+          loading: false,
+        });
       },
 
       clearError: () => {

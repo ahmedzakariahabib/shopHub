@@ -50,6 +50,11 @@ const BrandsList = () => {
     }
   };
 
+  // New function to handle brand click
+  const handleBrandClick = (brandId, brandName) => {
+    router.push(`/products?brand=${brandId}`);
+  };
+
   if (loading && !brands.length) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -140,9 +145,12 @@ const BrandsList = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {brands.map((brand) => (
                   <tr key={brand._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 flex justify-center whitespace-nowrap">
+                    <td
+                      className="px-6 py-4 flex justify-center whitespace-nowrap cursor-pointer"
+                      onClick={() => handleBrandClick(brand._id, brand.name)}
+                    >
                       {brand.logo.startsWith("http") ? (
-                        <div className="relative h-10 w-10 rounded-md overflow-hidden">
+                        <div className="relative h-10 w-10 rounded-md overflow-hidden hover:opacity-80 transition-opacity">
                           <Image
                             src={brand.logo}
                             alt={brand.name}
@@ -151,7 +159,7 @@ const BrandsList = () => {
                           />
                         </div>
                       ) : (
-                        <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                           <svg
                             className="h-6 w-6 text-gray-400"
                             fill="none"
@@ -169,8 +177,11 @@ const BrandsList = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-center  font-medium text-gray-900">
+                    <td
+                      className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                      onClick={() => handleBrandClick(brand._id, brand.name)}
+                    >
+                      <div className="text-sm text-center font-medium text-gray-900 hover:text-[#16a34a] transition-colors">
                         {brand.name}
                       </div>
                     </td>
@@ -180,7 +191,7 @@ const BrandsList = () => {
                           onClick={() =>
                             router.push(`/brands/brandDetails/${brand._id}`)
                           }
-                          className="text-[#16a34a]    hover:text-[#65a30d] transition-colors"
+                          className="text-[#16a34a] hover:text-[#65a30d] transition-colors"
                         >
                           <Eye className="w-4 h-4" />
                           Details

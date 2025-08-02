@@ -58,7 +58,7 @@ export default function LoginForm() {
       const raw = localStorage.getItem("auth-storage");
       const name = raw ? JSON.parse(raw)?.state?.name : null;
       toast.success(`Welcome back, ${name || "shopper"}! 🛍️`);
-      router.push("/");
+      router.push("/dashboard");
     }
   };
 
@@ -138,7 +138,7 @@ export default function LoginForm() {
                 <span className="ml-2 text-sm text-[#365314]">Remember me</span>
               </label>
               <a
-                href="/forgot-password"
+                // href="/forgot-password"
                 className="text-sm text-[#16a34a] hover:text-[#15803d] transition-colors"
               >
                 Forgot password?

@@ -13,14 +13,16 @@ import {
 } from "@heroicons/react/24/outline";
 import useAuthStore from "../_store/authStore";
 import { jwtDecode } from "jwt-decode";
+import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(3);
-  const [name, setName] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(null);
-  const { role: stateRole } = useAuthStore();
 
+  const [isAdmin, setIsAdmin] = useState(null);
+  const { role: stateRole, logout, name } = useAuthStore();
+  const router = useRouter();
   const getRoleFromToken = () => {
     try {
       const authStorage = localStorage.getItem("auth-storage");
@@ -44,18 +46,6 @@ const Navbar = () => {
     setIsAdmin(isUserAdmin);
   }, [stateRole]);
 
-  useEffect(() => {
-    const authStorage = localStorage.getItem("auth-storage");
-    if (authStorage) {
-      try {
-        const parsed = JSON.parse(authStorage);
-        setName(parsed?.state?.name || null);
-      } catch (err) {
-        console.error("Error parsing auth-storage", err);
-      }
-    }
-  }, []);
-
   return (
     <>
       {/* Main Navbar */}
@@ -65,7 +55,7 @@ const Navbar = () => {
             {/* Logo */}
             <div className="flex-shrink-0">
               <Link
-                href="/"
+                href="/dashboard"
                 className="text-2xl font-bold hover:text-[#65a30d] text-[#16a34a] me-10 transition-colors"
               >
                 ShopHub
@@ -96,10 +86,10 @@ const Navbar = () => {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
               </Link>
               <Link
-                href="/about"
+                href="/products"
                 className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
               >
-                About
+                products
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
               </Link>
 
@@ -146,10 +136,23 @@ const Navbar = () => {
               </button>
 
               <button className="p-2 text-gray-600 hover:[#16a34a] transition-colors">
-                <UserIcon className="h-6 w-6" />
+                <UserIcon
+                  className="h-6 w-6"
+                  onClick={() => router.push("/settings")}
+                />
               </button>
               {name ? (
-                name
+                <>
+                  <div className="gap-2 flex">
+                    <h2>{name}</h2>
+                    <LogOut
+                      onClick={() => {
+                        logout();
+                        router.push("/auth/signin");
+                      }}
+                    />
+                  </div>
+                </>
               ) : (
                 <Link
                   href="/auth/signup"
@@ -192,7 +195,7 @@ const Navbar = () => {
             <div className="md:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
                 <Link
-                  href="/dashboard"
+                  href="/"
                   className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
                 >
                   Home
@@ -210,10 +213,10 @@ const Navbar = () => {
                   Brands
                 </Link>
                 <Link
-                  href="/about"
+                  href="/products"
                   className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
                 >
-                  About
+                  products
                 </Link>
                 {isAdmin ? (
                   <Link

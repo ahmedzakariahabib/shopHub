@@ -27,7 +27,8 @@ userRouter
   .route("/:id")
   .get(
     protectedRoutes,
-    allowedTo("admin"),
+    // allowedTo("admin"),
+    allowedTo("admin", "user"),
     validation(paramsIdVal),
     getSingleUser
   )
