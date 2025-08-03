@@ -7,13 +7,21 @@ import { Heart, ShoppingCart, Eye, Edit, Trash2, Star } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import useProductStore from "../_store/useProductStore";
 import useAuthStore from "../_store/authStore";
+import useWishlistStore from "../_store/wishlist";
+import useCartStore from "../_store/useCartStore";
 
 const ProductsList = () => {
   const router = useRouter();
   const { products, loading, error, fetchProducts, deleteProduct } =
     useProductStore();
+
+  const { updateWishlist, fetchWishlist, wishlistItems, deleteFromWishlist } =
+    useWishlistStore();
+
+  const { addToCart } = useCartStore();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [favorites, setFavorites] = useState(new Set());
+  const [isUser, setIsUser] = useState(false);
+
   const { role: stateRole } = useAuthStore();
 
   const getRoleFromToken = () => {
@@ -35,15 +43,12 @@ const ProductsList = () => {
   useEffect(() => {
     const role = getRoleFromToken();
     const isUserAdmin = role === "admin" && stateRole === "admin";
+    const CheckIsUser = role === "user" && stateRole === "user";
     setIsAdmin(isUserAdmin);
+    setIsUser(CheckIsUser);
     fetchProducts();
-
-    // Load favorites from localStorage
-    const savedFavorites = localStorage.getItem("product-favorites");
-    if (savedFavorites) {
-      setFavorites(new Set(JSON.parse(savedFavorites)));
-    }
-  }, [fetchProducts, stateRole]);
+    isUser && fetchWishlist();
+  }, [fetchProducts, fetchWishlist, stateRole]);
 
   const handleDelete = async (id, e) => {
     e.stopPropagation();
@@ -55,21 +60,27 @@ const ProductsList = () => {
     }
   };
 
-  const toggleFavorite = (productId, e) => {
+  const toggleFavorite = async (productId, e) => {
     e.stopPropagation();
-    const newFavorites = new Set(favorites);
-
-    if (newFavorites.has(productId)) {
-      newFavorites.delete(productId);
-    } else {
-      newFavorites.add(productId);
-    }
-
-    setFavorites(newFavorites);
-    localStorage.setItem(
-      "product-favorites",
-      JSON.stringify([...newFavorites])
+    const isCurrentlyFavorite = wishlistItems?.some(
+      (item) => item._id === productId
     );
+    if (isCurrentlyFavorite) {
+      await deleteFromWishlist(productId);
+    } else {
+      await updateWishlist(productId);
+    }
+  };
+
+  const AddProductToCart = async (productId, e) => {
+    e.stopPropagation();
+    // const isCurrentlyFavorite = wishlistItems?.some(
+    //   (item) => item._id === productId
+    // );
+    // if (isCurrentlyFavorite) {
+    //   await deleteFromWishlist(productId);
+    // } else {
+    await addToCart(productId);
   };
 
   const formatPrice = (price) => {
@@ -174,12 +185,16 @@ const ProductsList = () => {
           <div className="p-6">
             {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => {
+              {products?.map((product) => {
                 const discountPercent = calculateDiscount(
                   product.price,
                   product.priceAfterDiscount
                 );
-                const isFavorite = favorites.has(product._id);
+
+                // Check if product is in wishlist using wishlistItems array
+                const isFavorite =
+                  wishlistItems?.some((item) => item._id === product._id) ||
+                  false;
 
                 return (
                   <div
@@ -197,20 +212,26 @@ const ProductsList = () => {
                     )}
 
                     {/* Favorite Button */}
-                    <button
-                      onClick={(e) => toggleFavorite(product._id, e)}
-                      className={`absolute top-2 right-2 z-10 p-2 rounded-full transition-all duration-200 ${
-                        isFavorite
-                          ? "bg-red-100 text-red-600 hover:bg-red-200"
-                          : "bg-white/80 text-gray-600 hover:bg-white hover:text-red-600"
-                      }`}
-                    >
-                      <Heart
-                        className={`w-5 h-5 ${
-                          isFavorite ? "fill-current" : ""
+                    {isUser ? (
+                      <button
+                        onClick={(e) => toggleFavorite(product._id, e)}
+                        className={`absolute top-2 right-2 z-10 p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${
+                          isFavorite
+                            ? "bg-red-100 text-red-600 hover:bg-red-200 shadow-md"
+                            : "bg-white/90 text-gray-500 hover:bg-red-50 hover:text-red-500 backdrop-blur-sm"
                         }`}
-                      />
-                    </button>
+                      >
+                        <Heart
+                          className={`w-5 h-5 transition-all duration-200 ${
+                            isFavorite
+                              ? "fill-current transform scale-110"
+                              : "hover:scale-110"
+                          }`}
+                        />
+                      </button>
+                    ) : (
+                      ""
+                    )}
 
                     {/* Product Image */}
                     <div className="aspect-square relative overflow-hidden rounded-t-lg bg-gray-100">
@@ -329,7 +350,7 @@ const ProductsList = () => {
                           View
                         </button>
 
-                        {(product.quantity || 0) > 0 && (
+                        {((product.quantity && isUser) || 0) > 0 && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -337,7 +358,10 @@ const ProductsList = () => {
                             }}
                             className="px-3 py-2 border border-[#16a34a] text-[#16a34a] hover:bg-[#16a34a] hover:text-white rounded-md transition-colors"
                           >
-                            <ShoppingCart className="w-4 h-4" />
+                            <ShoppingCart
+                              className="w-4 h-4"
+                              onClick={(e) => AddProductToCart(product._id, e)}
+                            />
                           </button>
                         )}
                       </div>
