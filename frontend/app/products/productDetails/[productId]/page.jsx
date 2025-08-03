@@ -10,22 +10,37 @@ import {
   Share2,
   ChevronLeft,
   ChevronRight,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import useProductStore from "@/app/_store/useProductStore";
 import useAuthStore from "@/app/_store/authStore";
+import useWishlistStore from "@/app/_store/wishlist";
+import useCartStore from "@/app/_store/useCartStore";
 
 const ProductDetail = () => {
   const router = useRouter();
   const { productId } = useParams();
   const { currentProduct, loading, fetchProduct, deleteProduct } =
     useProductStore();
+  const { updateWishlist, fetchWishlist, wishlistItems, deleteFromWishlist } =
+    useWishlistStore();
+  const {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateCartItemQuantity,
+    fetchCart,
+  } = useCartStore();
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isUser, setIsUser] = useState(false);
   const { role: stateRole } = useAuthStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [updatingCart, setUpdatingCart] = useState(false);
+  const [updatingWishlist, setUpdatingWishlist] = useState(false);
 
   const getRoleFromToken = () => {
     try {
@@ -46,11 +61,118 @@ const ProductDetail = () => {
   useEffect(() => {
     const role = getRoleFromToken();
     const isUserAdmin = role === "admin" && stateRole === "admin";
+    const CheckIsUser = role === "user" && stateRole === "user";
     setIsAdmin(isUserAdmin);
+    setIsUser(CheckIsUser);
+
     if (productId) {
       fetchProduct(productId);
     }
+
+    if (CheckIsUser) {
+      fetchWishlist();
+      fetchCart();
+    }
   }, [productId, fetchProduct, stateRole]);
+
+  // Cart functionality
+  const getCartItemDetails = (productId) => {
+    if (!cartItems || !Array.isArray(cartItems)) return null;
+
+    const cartItem = cartItems.find((item) => {
+      if (typeof item.product === "object" && item.product?._id) {
+        return item.product._id === productId;
+      }
+      if (typeof item.product === "string") {
+        return item.product === productId;
+      }
+      return false;
+    });
+
+    return cartItem
+      ? {
+          cartItemId: cartItem._id,
+          quantity: cartItem.quantity,
+          price: cartItem.price,
+        }
+      : null;
+  };
+
+  const getCartItemQuantity = (productId) => {
+    const cartItemDetails = getCartItemDetails(productId);
+    return cartItemDetails ? cartItemDetails.quantity : 0;
+  };
+
+  const isProductInCart = (productId) => {
+    return getCartItemQuantity(productId) > 0;
+  };
+
+  const addProductToCart = async () => {
+    if (!currentProduct?._id) return;
+
+    setUpdatingCart(true);
+    try {
+      const success = await addToCart(currentProduct._id);
+      if (success) {
+        await fetchCart();
+        console.log("Product added to cart successfully");
+      }
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+    } finally {
+      setUpdatingCart(false);
+    }
+  };
+
+  const updateProductQuantity = async (cartItemId, newQuantity) => {
+    if (newQuantity < 0) return;
+
+    setUpdatingCart(true);
+    try {
+      if (newQuantity === 0) {
+        const success = await removeFromCart(cartItemId);
+        if (success) {
+          await fetchCart();
+          console.log("Product removed from cart successfully");
+        }
+      } else {
+        const success = await updateCartItemQuantity(cartItemId, newQuantity);
+        if (success) {
+          await fetchCart();
+          console.log(`Product quantity updated to ${newQuantity}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating product quantity:", error);
+    } finally {
+      setUpdatingCart(false);
+    }
+  };
+
+  // Wishlist functionality
+  const isProductInWishlist = () => {
+    return (
+      wishlistItems?.some((item) => item._id === currentProduct?._id) || false
+    );
+  };
+
+  const toggleFavorite = async () => {
+    if (!currentProduct?._id) return;
+
+    setUpdatingWishlist(true);
+    try {
+      const isCurrentlyFavorite = isProductInWishlist();
+      if (isCurrentlyFavorite) {
+        await deleteFromWishlist(currentProduct._id);
+      } else {
+        await updateWishlist(currentProduct._id);
+      }
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+    } finally {
+      setUpdatingWishlist(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this product?")) {
@@ -150,6 +272,13 @@ const ProductDetail = () => {
             100
         )
       : 0;
+
+  // Get current cart item details
+  const cartItemDetails = getCartItemDetails(currentProduct._id);
+  const cartQuantity = cartItemDetails ? cartItemDetails.quantity : 0;
+  const inCart = cartQuantity > 0;
+  const cartItemId = cartItemDetails?.cartItemId;
+  const isWishlisted = isProductInWishlist();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -261,6 +390,13 @@ const ProductDetail = () => {
                     </button>
                   </>
                 )}
+
+                {/* Cart Badge */}
+                {inCart && (
+                  <div className="absolute top-4 right-4 bg-[#16a34a] text-white text-xs font-bold px-3 py-1 rounded-full">
+                    In Cart: {cartQuantity}
+                  </div>
+                )}
               </div>
 
               {/* Thumbnail Gallery */}
@@ -365,77 +501,100 @@ const ProductDetail = () => {
                 </p>
               </div>
 
-              {/* Quantity Selector and Actions */}
-              {(currentProduct.quantity || 0) > 0 && (
+              {/* User Actions */}
+              {isUser && (currentProduct.quantity || 0) > 0 && (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <label
-                      htmlFor="quantity"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Quantity:
-                    </label>
-                    <div className="flex items-center border border-gray-300 rounded-md">
+                  {/* Cart Actions */}
+                  <div className="space-y-3">
+                    {!inCart ? (
                       <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition-colors"
+                        onClick={addProductToCart}
+                        disabled={updatingCart}
+                        className="w-full bg-[#16a34a] hover:bg-[#65a30d] text-white px-6 py-3 rounded-md font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                       >
-                        -
+                        {updatingCart ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                        ) : (
+                          <>
+                            <ShoppingCart className="w-5 h-5" />
+                            Add to Cart
+                          </>
+                        )}
                       </button>
-                      <input
-                        type="number"
-                        id="quantity"
-                        min="1"
-                        max={currentProduct.quantity || 1}
-                        value={quantity}
-                        onChange={(e) =>
-                          setQuantity(
-                            Math.max(
-                              1,
-                              Math.min(
-                                currentProduct.quantity || 1,
-                                parseInt(e.target.value) || 1
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-center gap-3 bg-gray-50 p-3 rounded-md">
+                          <button
+                            onClick={() =>
+                              updateProductQuantity(
+                                cartItemId,
+                                cartQuantity - 1
                               )
-                            )
-                          )
-                        }
-                        className="w-16 px-2 py-2 text-center border-x border-gray-300 focus:outline-none"
-                      />
+                            }
+                            disabled={updatingCart || cartQuantity < 1}
+                            className="p-2 bg-red-500 text-white hover:bg-red-600 rounded-md transition-colors disabled:opacity-50"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="px-4 py-2 bg-white border rounded-md font-medium min-w-[60px] text-center">
+                            {updatingCart ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-[#16a34a] mx-auto"></div>
+                            ) : (
+                              cartQuantity
+                            )}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateProductQuantity(
+                                cartItemId,
+                                cartQuantity + 1
+                              )
+                            }
+                            disabled={
+                              updatingCart ||
+                              cartQuantity >= currentProduct.quantity
+                            }
+                            className="p-2 bg-[#16a34a] text-white hover:bg-[#65a30d] rounded-md transition-colors disabled:opacity-50"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="text-sm text-center text-gray-600">
+                          Item in cart - Adjust quantity above
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Wishlist and Share Actions */}
+                    <div className="flex gap-3">
                       <button
-                        onClick={() =>
-                          setQuantity(
-                            Math.min(currentProduct.quantity || 1, quantity + 1)
-                          )
-                        }
-                        className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition-colors"
+                        onClick={toggleFavorite}
+                        disabled={updatingWishlist}
+                        className={`flex-1 px-4 py-3 rounded-md border transition-colors flex items-center justify-center gap-2 ${
+                          isWishlisted
+                            ? "bg-red-50 border-red-200 text-red-600"
+                            : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                        } disabled:opacity-50`}
                       >
-                        +
+                        {updatingWishlist ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-current"></div>
+                        ) : (
+                          <>
+                            <Heart
+                              className={`w-5 h-5 ${
+                                isWishlisted ? "fill-current" : ""
+                              }`}
+                            />
+                            {isWishlisted
+                              ? "Remove from Wishlist"
+                              : "Add to Wishlist"}
+                          </>
+                        )}
+                      </button>
+                      <button className="px-4 py-3 rounded-md bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors">
+                        <Share2 className="w-5 h-5" />
                       </button>
                     </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button className="flex-1 bg-[#16a34a] hover:bg-[#65a30d] text-white px-6 py-3 rounded-md font-medium transition-colors flex items-center justify-center gap-2">
-                      <ShoppingCart className="w-5 h-5" />
-                      Add to Cart
-                    </button>
-                    <button
-                      onClick={() => setIsWishlisted(!isWishlisted)}
-                      className={`px-4 py-3 rounded-md border transition-colors ${
-                        isWishlisted
-                          ? "bg-red-50 border-red-200 text-red-600"
-                          : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
-                      }`}
-                    >
-                      <Heart
-                        className={`w-5 h-5 ${
-                          isWishlisted ? "fill-current" : ""
-                        }`}
-                      />
-                    </button>
-                    <button className="px-4 py-3 rounded-md bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors">
-                      <Share2 className="w-5 h-5" />
-                    </button>
                   </div>
                 </div>
               )}

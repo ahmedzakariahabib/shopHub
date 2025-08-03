@@ -3,7 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Heart, ShoppingCart, Eye, Edit, Trash2, Star } from "lucide-react";
+import {
+  Heart,
+  ShoppingCart,
+  Eye,
+  Edit,
+  Trash2,
+  Star,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import useProductStore from "../_store/useProductStore";
 import useAuthStore from "../_store/authStore";
@@ -14,15 +23,20 @@ const ProductsList = () => {
   const router = useRouter();
   const { products, loading, error, fetchProducts, deleteProduct } =
     useProductStore();
-
   const { updateWishlist, fetchWishlist, wishlistItems, deleteFromWishlist } =
     useWishlistStore();
+  const {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateCartItemQuantity,
+    fetchCart,
+  } = useCartStore();
+  const { role: stateRole } = useAuthStore();
 
-  const { addToCart } = useCartStore();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isUser, setIsUser] = useState(false);
-
-  const { role: stateRole } = useAuthStore();
+  const [updatingCart, setUpdatingCart] = useState({});
 
   const getRoleFromToken = () => {
     try {
@@ -47,8 +61,11 @@ const ProductsList = () => {
     setIsAdmin(isUserAdmin);
     setIsUser(CheckIsUser);
     fetchProducts();
-    isUser && fetchWishlist();
-  }, [fetchProducts, fetchWishlist, stateRole]);
+    if (CheckIsUser) {
+      fetchWishlist();
+      fetchCart();
+    }
+  }, [fetchProducts, fetchWishlist, fetchCart, stateRole]);
 
   const handleDelete = async (id, e) => {
     e.stopPropagation();
@@ -72,15 +89,94 @@ const ProductsList = () => {
     }
   };
 
-  const AddProductToCart = async (productId, e) => {
+  const addProductToCart = async (productId, e) => {
     e.stopPropagation();
-    // const isCurrentlyFavorite = wishlistItems?.some(
-    //   (item) => item._id === productId
-    // );
-    // if (isCurrentlyFavorite) {
-    //   await deleteFromWishlist(productId);
-    // } else {
-    await addToCart(productId);
+    setUpdatingCart((prev) => ({ ...prev, [productId]: true }));
+
+    try {
+      const success = await addToCart(productId);
+      if (success) {
+        await fetchCart();
+        console.log("Product added to cart successfully");
+      }
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+    } finally {
+      setUpdatingCart((prev) => ({ ...prev, [productId]: false }));
+    }
+  };
+
+  console.log(cartItems);
+
+  const getCartItemDetails = (productId) => {
+    if (!cartItems || !Array.isArray(cartItems)) return null;
+
+    const cartItem = cartItems.find((item) => {
+      if (typeof item.product === "object" && item.product?._id) {
+        return item.product._id === productId;
+      }
+      if (typeof item.product === "string") {
+        return item.product === productId;
+      }
+      return false;
+    });
+
+    return cartItem
+      ? {
+          cartItemId: cartItem._id,
+          quantity: cartItem.quantity,
+          price: cartItem.price,
+        }
+      : null;
+  };
+
+  const updateProductQuantity = async (cartItemId, quantity, e) => {
+    e.stopPropagation();
+
+    if (quantity < 0) return;
+
+    setUpdatingCart((prev) => ({ ...prev, [cartItemId]: true }));
+
+    try {
+      if (quantity === 0) {
+        const success = await removeFromCart(cartItemId);
+        if (success) {
+          await fetchCart();
+          console.log("Product removed from cart successfully");
+        }
+      } else {
+        const success = await updateCartItemQuantity(cartItemId, quantity);
+        if (success) {
+          await fetchCart();
+          console.log(`Product quantity updated to ${quantity}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating product quantity:", error);
+    } finally {
+      setUpdatingCart((prev) => ({ ...prev, [cartItemId]: false }));
+    }
+  };
+
+  // Increment quantity using cart item ID
+  const incrementQuantity = async (cartItemId, currentQuantity, e) => {
+    const newQuantity = currentQuantity + 1;
+    await updateProductQuantity(cartItemId, newQuantity, e);
+  };
+
+  // Decrement quantity using cart item ID
+  const decrementQuantity = async (cartItemId, currentQuantity, e) => {
+    const newQuantity = Math.max(0, currentQuantity - 1);
+    await updateProductQuantity(cartItemId, newQuantity, e);
+  };
+
+  const getCartItemQuantity = (productId) => {
+    const cartItemDetails = getCartItemDetails(productId);
+    return cartItemDetails ? cartItemDetails.quantity : 0;
+  };
+
+  const isProductInCart = (productId) => {
+    return getCartItemQuantity(productId) > 0;
   };
 
   const formatPrice = (price) => {
@@ -191,10 +287,20 @@ const ProductsList = () => {
                   product.priceAfterDiscount
                 );
 
-                // Check if product is in wishlist using wishlistItems array
                 const isFavorite =
                   wishlistItems?.some((item) => item._id === product._id) ||
                   false;
+
+                // Get cart item details
+                const cartItemDetails = getCartItemDetails(product._id);
+                const cartQuantity = cartItemDetails
+                  ? cartItemDetails.quantity
+                  : 0;
+                const inCart = cartQuantity > 0;
+                const cartItemId = cartItemDetails?.cartItemId;
+                const isUpdating = cartItemId
+                  ? updatingCart[cartItemId]
+                  : updatingCart[product._id];
 
                 return (
                   <div
@@ -204,7 +310,6 @@ const ProductsList = () => {
                       router.push(`/products/productDetails/${product._id}`)
                     }
                   >
-                    {/* Discount Badge */}
                     {discountPercent > 0 && (
                       <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
                         -{discountPercent}%
@@ -231,6 +336,20 @@ const ProductsList = () => {
                       </button>
                     ) : (
                       ""
+                    )}
+
+                    {/* Cart Badge */}
+                    {inCart && (
+                      <div className="absolute top-2 right-12 z-10 bg-[#16a34a] text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {cartQuantity}
+                      </div>
+                    )}
+
+                    {/* Loading Overlay */}
+                    {isUpdating && (
+                      <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#16a34a]"></div>
+                      </div>
                     )}
 
                     {/* Product Image */}
@@ -350,19 +469,60 @@ const ProductsList = () => {
                           View
                         </button>
 
-                        {((product.quantity && isUser) || 0) > 0 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Add to cart logic here
-                            }}
-                            className="px-3 py-2 border border-[#16a34a] text-[#16a34a] hover:bg-[#16a34a] hover:text-white rounded-md transition-colors"
-                          >
-                            <ShoppingCart
-                              className="w-4 h-4"
-                              onClick={(e) => AddProductToCart(product._id, e)}
-                            />
-                          </button>
+                        {/* Cart Actions for Users */}
+                        {isUser && (product.quantity || 0) > 0 && (
+                          <div className="flex gap-1">
+                            {!inCart ? (
+                              <button
+                                onClick={(e) =>
+                                  addProductToCart(product._id, e)
+                                }
+                                disabled={isUpdating}
+                                className="px-3 py-2 border border-[#16a34a] text-[#16a34a] hover:bg-[#16a34a] hover:text-white rounded-md transition-colors disabled:opacity-50"
+                                title="Add to Cart"
+                              >
+                                <ShoppingCart className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={(e) => {
+                                    if (cartItemId) {
+                                      decrementQuantity(
+                                        cartItemId,
+                                        cartQuantity,
+                                        e
+                                      );
+                                    }
+                                  }}
+                                  disabled={isUpdating || !cartItemId}
+                                  className="px-2 py-2 bg-red-500 text-white hover:bg-red-600 rounded-md transition-colors disabled:opacity-50"
+                                  title="Decrease Quantity"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm font-medium min-w-[32px] text-center">
+                                  {cartQuantity}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    if (cartItemId) {
+                                      incrementQuantity(
+                                        cartItemId,
+                                        cartQuantity,
+                                        e
+                                      );
+                                    }
+                                  }}
+                                  disabled={isUpdating || !cartItemId}
+                                  className="px-2 py-2 bg-[#16a34a] text-white hover:bg-[#65a30d] rounded-md transition-colors disabled:opacity-50"
+                                  title="Increase Quantity"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
 

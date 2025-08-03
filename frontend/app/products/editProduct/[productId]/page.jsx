@@ -27,6 +27,7 @@ const EditProductForm = ({ product }) => {
     brand: "",
     category: "",
     subcategory: "",
+    quantity: "",
   });
 
   const [imgCover, setImgCover] = useState(null);
@@ -44,6 +45,7 @@ const EditProductForm = ({ product }) => {
         description: currentProduct.description || "",
         price: currentProduct.price || "",
         priceAfterDiscount: currentProduct.priceAfterDiscount || "",
+        quantity: currentProduct.quantity,
         brand: currentProduct.brand?._id || currentProduct.brand || "",
         category: currentProduct.category?._id || currentProduct.category || "",
         subcategory:
@@ -167,6 +169,7 @@ const EditProductForm = ({ product }) => {
     if (!formData.description.trim())
       newErrors.description = "Description is required";
     if (!formData.price) newErrors.price = "Price is required";
+    if (!formData.quantity) newErrors.quantity = "quantity is required";
     if (formData.price && formData.price <= 0)
       newErrors.price = "Price must be greater than 0";
 
@@ -425,6 +428,30 @@ const EditProductForm = ({ product }) => {
                 <p className="mt-1 text-sm text-red-600">
                   {errors.priceAfterDiscount}
                 </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="quantity"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                quantity
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="quantity"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  className={`w-full pl-3  py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-[#16a34a] ${
+                    errors.quantity ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+              </div>
+              {errors.quantity && (
+                <p className="mt-1 text-sm text-red-600">{errors.quantity}</p>
               )}
             </div>
           </div>

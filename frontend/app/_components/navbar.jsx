@@ -15,14 +15,24 @@ import useAuthStore from "../_store/authStore";
 import { jwtDecode } from "jwt-decode";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import useCartStore from "../_store/useCartStore";
+import useWishlistStore from "../_store/wishlist";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(3);
 
   const [isAdmin, setIsAdmin] = useState(null);
   const [isUser, setIsUser] = useState(null);
   const { role: stateRole, logout, name } = useAuthStore();
+
+  const { wishlistItems } = useWishlistStore();
+  const { cartItems } = useCartStore();
+
+  // Get actual counts from stores
+  const wishlistCount = wishlistItems?.length || 0;
+  const cartCount = cartItems?.length || 0;
+
+  console.log("fav", wishlistItems, "car", cartItems);
   const router = useRouter();
   const getRoleFromToken = () => {
     try {
@@ -127,18 +137,25 @@ const Navbar = () => {
             <div className="flex items-center space-x-4">
               {isUser ? (
                 <>
-                  {" "}
-                  <button className="p-2 text-gray-600 hover:[#65a30d] transition-colors">
-                    <HeartIcon
-                      className="h-6 w-6"
-                      onClick={() => router.push("/wishlist")}
-                    />
+                  {/* Wishlist Button with Count */}
+                  <button
+                    className="p-2 text-gray-600 hover:text-[#65a30d] transition-colors relative"
+                    onClick={() => router.push("/wishlist")}
+                  >
+                    <HeartIcon className="h-6 w-6" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+                        {wishlistCount}
+                      </span>
+                    )}
                   </button>
-                  <button className="p-2 text-gray-600 hover:[#65a30d] transition-colors relative">
-                    <ShoppingCartIcon
-                      className="h-6 w-6"
-                      onClick={() => router.push("/carts")}
-                    />
+
+                  {/* Cart Button with Count */}
+                  <button
+                    className="p-2 text-gray-600 hover:text-[#65a30d] transition-colors relative"
+                    onClick={() => router.push("/carts")}
+                  >
+                    <ShoppingCartIcon className="h-6 w-6" />
                     {cartCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-[#16a34a] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
                         {cartCount}
@@ -150,7 +167,7 @@ const Navbar = () => {
                 ""
               )}
               {isAdmin || isUser ? (
-                <button className="p-2 text-gray-600 hover:[#16a34a] transition-colors">
+                <button className="p-2 text-gray-600 hover:text-[#16a34a] transition-colors">
                   <UserIcon
                     className="h-6 w-6"
                     onClick={() => router.push("/settings")}

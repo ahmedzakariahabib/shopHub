@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Trash2,
   Plus,
   Minus,
   ShoppingCart,
   Tag,
-  X,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import useCartStore from "../_store/useCartStore";
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
 const CartComponent = () => {
   const {
     cartItems,
@@ -27,27 +26,48 @@ const CartComponent = () => {
     clearCart,
     applyCoupon,
   } = useCartStore();
+
   const [couponCode, setCouponCode] = useState("");
   const [updatingItems, setUpdatingItems] = useState(new Set());
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [imageErrors, setImageErrors] = useState(new Set());
-
+  const [productDataCache, setProductDataCache] = useState({});
+  const router = useRouter();
   useEffect(() => {
     fetchCart();
   }, []);
 
-  // Helper functions for image processing (no memoization to ensure fresh data)
-  const getAllImages = (item) => {
-    const allImages = [];
+  useEffect(() => {
+    const cache = {};
+    cartItems.forEach((item) => {
+      if (typeof item.product === "object" && item.product !== null) {
+        cache[item.product._id] = item.product;
+      }
+    });
+    setProductDataCache((prevCache) => ({ ...prevCache, ...cache }));
+  }, [cartItems]);
 
-    if (item?.product?.imgCover && item.product.imgCover.trim()) {
-      allImages.push(item.product.imgCover);
+  const getProductData = (item) => {
+    if (typeof item.product === "object" && item.product !== null) {
+      return item.product;
     }
 
-    if (item?.product?.images && Array.isArray(item.product.images)) {
-      const validImages = item.product.images.filter(
-        (img) => img && img.trim()
-      );
+    if (typeof item.product === "string" && productDataCache[item.product]) {
+      return productDataCache[item.product];
+    }
+    return null;
+  };
+
+  const getAllImages = (item) => {
+    const allImages = [];
+    const productData = getProductData(item);
+
+    if (productData?.imgCover && productData.imgCover.trim()) {
+      allImages.push(productData.imgCover);
+    }
+
+    if (productData?.images && Array.isArray(productData.images)) {
+      const validImages = productData.images.filter((img) => img && img.trim());
       allImages.push(...validImages);
     }
 
@@ -59,18 +79,15 @@ const CartComponent = () => {
     return allImages.length > 1 && allImages.some((img) => img && img.trim());
   };
 
-  // Optimized quantity change handler
   const handleQuantityChange = useCallback(
     async (itemId, newQuantity) => {
       if (newQuantity < 1) return;
 
-      // Add to updating items for UI feedback
       setUpdatingItems((prev) => new Set([...prev, itemId]));
 
       try {
         await updateCartItemQuantity(itemId, newQuantity);
       } finally {
-        // Remove from updating items regardless of success/failure
         setUpdatingItems((prev) => {
           const newSet = new Set(prev);
           newSet.delete(itemId);
@@ -99,7 +116,6 @@ const CartComponent = () => {
     setCouponCode("");
   };
 
-  // Stable image URL generator with fallback
   const getImageUrl = useCallback(
     (item) => {
       const allImages = getAllImages(item);
@@ -121,7 +137,7 @@ const CartComponent = () => {
 
       return image;
     },
-    [currentImageIndex, imageErrors]
+    [currentImageIndex, imageErrors, productDataCache]
   );
 
   const handleImageNavigation = useCallback(
@@ -146,7 +162,7 @@ const CartComponent = () => {
         [itemId]: newIndex,
       }));
     },
-    [cartItems, currentImageIndex]
+    [cartItems, currentImageIndex, productDataCache]
   );
 
   const handleImageClick = useCallback(
@@ -176,12 +192,16 @@ const CartComponent = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#16a34a] mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading your cart...</p>
           </div>
         </div>
       </div>
     );
+  }
+
+  if (cartItems.length < 1) {
+    <p>not found</p>;
   }
 
   if (error) {
@@ -202,7 +222,7 @@ const CartComponent = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <ShoppingCart className="w-8 h-8 text-blue-500" />
+            <ShoppingCart className="w-8 h-8 text-[#16a34a]" />
             Shopping Cart
             <span className="text-lg font-normal text-gray-500">
               ({summary.numOfCartItems} items)
@@ -220,7 +240,10 @@ const CartComponent = () => {
             <p className="text-gray-600 mb-8">
               Start adding some products to your cart
             </p>
-            <button className="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 transition-colors">
+            <button
+              className="bg-[#16a34a] text-white px-8 py-3 rounded-lg hover:bg-[#65a30d] transition-colors"
+              onClick={() => router.push("/dashboard")}
+            >
               Continue Shopping
             </button>
           </div>
@@ -230,6 +253,7 @@ const CartComponent = () => {
             <div className="lg:col-span-3">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {cartItems.map((item, index) => {
+                  const productData = getProductData(item);
                   const allImages = getAllImages(item);
                   const hasMultipleImages = hasValidImages(item);
                   const currentImage = getImageUrl(item);
@@ -244,7 +268,7 @@ const CartComponent = () => {
                       <div className="relative aspect-square overflow-hidden">
                         <Image
                           src={currentImage}
-                          alt={item.product?.title || "Product"}
+                          alt={productData?.title || "Product"}
                           width={200}
                           height={200}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
@@ -254,8 +278,6 @@ const CartComponent = () => {
                           onError={() =>
                             handleImageError(item._id, currentIndex)
                           }
-                          priority={index === 0} // Add priority for first image
-                          unoptimized={currentImage.startsWith("data:")} // For base64 images
                         />
 
                         {/* Image Navigation Arrows */}
@@ -326,22 +348,33 @@ const CartComponent = () => {
                       {/* Product Info */}
                       <div className="p-4">
                         <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 capitalize">
-                          {item.product?.title || "Product"}
+                          {productData?.title || "Product"}
                         </h3>
                         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                          {item.product?.description}
+                          {productData?.description || ""}
                         </p>
 
                         {/* Price */}
                         <div className="flex items-center gap-2 mb-4">
-                          <span className="text-lg font-bold text-blue-600">
+                          <span className="text-lg font-bold text-[#65a30d]">
                             ${item.price}
                           </span>
-                          {item.product?.price !== item.price && (
-                            <span className="text-sm text-gray-500 line-through">
-                              ${item.product?.price}
-                            </span>
-                          )}
+                          {productData?.price &&
+                            productData.price !== item.price && (
+                              <span className="text-sm text-gray-500 line-through">
+                                ${productData.price}
+                              </span>
+                            )}
+                          {productData?.priceAfterDiscount &&
+                            productData.priceAfterDiscount !== item.price && (
+                              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                                Save $
+                                {(
+                                  productData.price -
+                                  productData.priceAfterDiscount
+                                ).toFixed(2)}
+                              </span>
+                            )}
                         </div>
 
                         {/* Quantity Controls */}
@@ -369,7 +402,7 @@ const CartComponent = () => {
 
                             <span className="w-8 text-center font-semibold">
                               {updatingItems.has(item._id) ? (
-                                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                <div className="w-4 h-4 border-2 border-[#16a34a] border-t-transparent rounded-full animate-spin mx-auto"></div>
                               ) : (
                                 item.quantity
                               )}
@@ -389,6 +422,21 @@ const CartComponent = () => {
                             </button>
                           </div>
                         </div>
+
+                        {/* Stock Info */}
+                        {productData?.quantity && (
+                          <div className="mt-2 text-xs text-gray-500">
+                            {productData.quantity > 10 ? (
+                              <span className="text-green-600">In Stock</span>
+                            ) : productData.quantity > 0 ? (
+                              <span className="text-yellow-600">
+                                Only {productData.quantity} left
+                              </span>
+                            ) : (
+                              <span className="text-red-600">Out of Stock</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -401,7 +449,7 @@ const CartComponent = () => {
                   <button
                     onClick={handleClearCart}
                     disabled={loading}
-                    className="text-red-600 hover:text-red-700 text-sm font-medium disabled:opacity-50"
+                    className="bg-[#16a34a] p-5 px-8 rounded-2xl text-white   text-sm font-medium disabled:opacity-50"
                   >
                     Clear entire cart
                   </button>
@@ -434,7 +482,7 @@ const CartComponent = () => {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       placeholder="Enter coupon code"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
                       onKeyPress={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
@@ -462,7 +510,7 @@ const CartComponent = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium">
-                      ${summary.totalCartPrice}
+                      ${summary.totalCartPrice.toFixed(2)}
                     </span>
                   </div>
 
@@ -485,10 +533,12 @@ const CartComponent = () => {
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Total</span>
-                      <span className="text-blue-600">
+                      <span className="text-[#65a30d]">
                         $
-                        {summary.totalPriceAfterDiscount ||
-                          summary.totalCartPrice}
+                        {(
+                          summary.totalPriceAfterDiscount ||
+                          summary.totalCartPrice
+                        ).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -496,7 +546,7 @@ const CartComponent = () => {
 
                 <button
                   disabled={loading || cartItems.length === 0}
-                  className="w-full mt-6 bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="w-full mt-6 bg-[#16a34a] text-white py-3 rounded-lg hover:bg-[#65a30d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   Proceed to Checkout
                 </button>

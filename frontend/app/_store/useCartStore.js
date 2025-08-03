@@ -27,6 +27,7 @@ const useCartStore = create((set, get) => ({
   },
 
   // Get logged user cart
+
   fetchCart: async () => {
     set({ loading: true, error: null });
     try {
@@ -42,24 +43,70 @@ const useCartStore = create((set, get) => ({
       });
 
       const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch cart");
+        if (response.status === 404) {
+          set({
+            cartItems: [],
+            cartSummary: {
+              totalCartPrice: 0,
+              totalPriceAfterDiscount: 0,
+              numOfCartItems: 0,
+            },
+            loading: false,
+            error: null,
+          });
+          return { cartItems: [], totalPrice: 0 };
+        } else {
+          throw new Error(
+            data.message || `Failed to fetch cart (${response.status})`
+          );
+        }
+      }
+
+      if (!data || !data.cart) {
+        set({
+          cartItems: [],
+          cartSummary: {
+            totalCartPrice: 0,
+            totalPriceAfterDiscount: 0,
+            numOfCartItems: 0,
+          },
+          loading: false,
+          error: null,
+        });
+        return { cartItems: [], totalPrice: 0 };
+      }
+
+      const cartItems = data.cart.cartItems || [];
+      const totalPrice = data.cart.totalPrice || 0;
+      const totalPriceAfterDiscount = data.cart.totalPriceAfterDiscount || null;
+      const numOfCartItems = cartItems.length;
+
+      set({
+        cartItems,
+        cartSummary: {
+          totalCartPrice: totalPrice,
+          totalPriceAfterDiscount,
+          numOfCartItems,
+        },
+        loading: false,
+        error: null,
+      });
+
+      return data.cart;
+    } catch (error) {
+      if (!error.message.includes("Authentication required")) {
+        toast.error(error.message);
       }
 
       set({
-        cartItems: data?.cart.cartItems || [],
+        cartItems: [],
         cartSummary: {
-          totalCartPrice: data.cart?.totalPrice || 0,
-          totalPriceAfterDiscount: data.cart?.totalPriceAfterDiscount || 0,
-          numOfCartItems: data.numOfCartItems || 0,
+          totalCartPrice: 0,
+          totalPriceAfterDiscount: 0,
+          numOfCartItems: 0,
         },
-        loading: false,
-      });
-      console.log(data.cart);
-      return data.cart;
-    } catch (error) {
-      toast.error(error.message);
-      set({
         error: error.message,
         loading: false,
       });
@@ -155,6 +202,7 @@ const useCartStore = create((set, get) => ({
 
   // Update cart product quantity
   updateCartItemQuantity: async (itemId, quantity) => {
+    console.log(itemId, quantity);
     set({ loading: true, error: null });
     try {
       const token = get().getAuthToken();

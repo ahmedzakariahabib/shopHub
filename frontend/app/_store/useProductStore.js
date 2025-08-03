@@ -102,6 +102,7 @@ const useProductStore = create((set, get) => ({
         subcategory,
         category,
         priceAfterDiscount,
+        quantity,
       } = productData;
 
       formData.append("title", title);
@@ -110,6 +111,7 @@ const useProductStore = create((set, get) => ({
       formData.append("brand", brand);
       formData.append("subcategory", subcategory);
       formData.append("category", category);
+      formData.append("quantity", quantity);
 
       if (priceAfterDiscount !== null && priceAfterDiscount !== undefined) {
         formData.append("priceAfterDiscount", priceAfterDiscount);
@@ -171,6 +173,7 @@ const useProductStore = create((set, get) => ({
         subcategory,
         category,
         priceAfterDiscount,
+        quantity,
       } = productData;
 
       if (title) formData.append("title", title);
@@ -178,6 +181,7 @@ const useProductStore = create((set, get) => ({
       if (price !== null && price !== undefined)
         formData.append("price", price);
       if (brand) formData.append("brand", brand);
+      if (quantity) formData.append("quantity", quantity);
       if (subcategory) formData.append("subcategory", subcategory);
       if (category) formData.append("category", category);
       if (priceAfterDiscount !== null && priceAfterDiscount !== undefined) {
@@ -206,6 +210,7 @@ const useProductStore = create((set, get) => ({
       );
 
       const data = await response.json();
+
       if (!response.ok) {
         throw new Error(data.message || "Failed to update product");
       }
