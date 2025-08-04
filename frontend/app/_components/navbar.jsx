@@ -83,20 +83,18 @@ const Navbar = () => {
                 Home
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
               </Link>
-              <Link
-                href="/dashboard"
-                className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
-              >
-                Categories
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
-              </Link>
-              <Link
-                href="/dashboard"
-                className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
-              >
-                brands
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
-              </Link>
+              {isUser ? (
+                <Link
+                  href="/orders/order"
+                  className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
+                >
+                  Order
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
+                </Link>
+              ) : (
+                ""
+              )}
+
               <Link
                 href="/products"
                 className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
@@ -107,6 +105,13 @@ const Navbar = () => {
 
               {isAdmin ? (
                 <>
+                  <Link
+                    href="/orders/allOrders"
+                    className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
+                  >
+                    Orders
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
+                  </Link>
                   <Link
                     href="/users"
                     className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
@@ -244,18 +249,17 @@ const Navbar = () => {
                 >
                   Home
                 </Link>
-                <Link
-                  href="/categories"
-                  className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
-                >
-                  Categories
-                </Link>
-                <Link
-                  href="/deals"
-                  className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
-                >
-                  Brands
-                </Link>
+                {isUser ? (
+                  <Link
+                    href="/orders/order"
+                    className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
+                  >
+                    Order
+                  </Link>
+                ) : (
+                  ""
+                )}
+
                 <Link
                   href="/products"
                   className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
@@ -263,12 +267,29 @@ const Navbar = () => {
                   products
                 </Link>
                 {isAdmin ? (
-                  <Link
-                    href="/"
-                    className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
-                  >
-                    users
-                  </Link>
+                  <>
+                    <Link
+                      href="/orders/allOrders"
+                      className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
+                    >
+                      Orders
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
+                    </Link>
+                    <Link
+                      href="/users"
+                      className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
+                    >
+                      users
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
+                    </Link>
+                    <Link
+                      href="/coupons"
+                      className="block px-3 py-2 text-gray-700 hover:text-[#65a30d] font-medium"
+                    >
+                      coupons
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
+                    </Link>
+                  </>
                 ) : (
                   ""
                 )}

@@ -1,10 +1,9 @@
-"use client";
-
 import { create } from "zustand";
 import toast from "react-hot-toast";
 
 const useCartStore = create((set, get) => ({
   cartItems: [],
+  cartId: null,
   cartSummary: {
     totalCartPrice: 0,
     totalPriceAfterDiscount: 0,
@@ -48,6 +47,7 @@ const useCartStore = create((set, get) => ({
         if (response.status === 404) {
           set({
             cartItems: [],
+            cartId: null,
             cartSummary: {
               totalCartPrice: 0,
               totalPriceAfterDiscount: 0,
@@ -67,6 +67,7 @@ const useCartStore = create((set, get) => ({
       if (!data || !data.cart) {
         set({
           cartItems: [],
+          cartId: null,
           cartSummary: {
             totalCartPrice: 0,
             totalPriceAfterDiscount: 0,
@@ -79,12 +80,14 @@ const useCartStore = create((set, get) => ({
       }
 
       const cartItems = data.cart.cartItems || [];
+      const cartId = data.cart._id;
       const totalPrice = data.cart.totalPrice || 0;
       const totalPriceAfterDiscount = data.cart.totalPriceAfterDiscount || null;
       const numOfCartItems = cartItems.length;
 
       set({
         cartItems,
+        cartId,
         cartSummary: {
           totalCartPrice: totalPrice,
           totalPriceAfterDiscount,
@@ -102,6 +105,7 @@ const useCartStore = create((set, get) => ({
 
       set({
         cartItems: [],
+        cartId: null,
         cartSummary: {
           totalCartPrice: 0,
           totalPriceAfterDiscount: 0,

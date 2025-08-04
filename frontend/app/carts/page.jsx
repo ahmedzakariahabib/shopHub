@@ -26,6 +26,7 @@ const CartComponent = () => {
     updateCartItemQuantity,
     clearCart,
     applyCoupon,
+    cartId,
   } = useCartStore();
 
   const [couponCode, setCouponCode] = useState("");
@@ -461,6 +462,12 @@ const CartComponent = () => {
             {/* Cart Summary - Fixed Sidebar */}
             <div className="space-y-6">
               {/* Coupon Section */}
+              <button
+                onClick={() => router.push(`orders/createOrder/${cartId}`)}
+                className="w-full mt-6 bg-[#16a34a] text-white py-3 rounded-lg hover:bg-[#65a30d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Create Order
+              </button>
               <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Tag className="w-5 h-5 text-green-500" />
