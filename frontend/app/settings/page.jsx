@@ -16,6 +16,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 import useUserStore from "@/app/_store/useUserStore";
 import useAuthStore from "@/app/_store/authStore";
+import AddressList from "../_components/address";
 
 const UserSettings = () => {
   const router = useRouter();
@@ -34,6 +35,31 @@ const UserSettings = () => {
     confirm: false,
   });
   const [loggedInUserId, setLoggedInUserId] = useState(null);
+
+  const [isUser, setIsUser] = useState(false);
+
+  const getRoleFromToken = () => {
+    try {
+      const authStorage = localStorage.getItem("auth-storage");
+      if (!authStorage) return null;
+
+      const { token } = JSON.parse(authStorage)?.state || {};
+      if (!token) return null;
+
+      const decoded = jwtDecode(token);
+
+      return decoded?.role || null;
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const role = getRoleFromToken();
+    const checkIsUser = role === "user" && stateRole === "user";
+    setIsUser(checkIsUser);
+  }, [stateRole]);
 
   const getDataFromToken = () => {
     try {
@@ -524,6 +550,12 @@ const UserSettings = () => {
                       {currentUser.addresses?.length || 0} addresses
                     </div>
                   </div>
+
+                  {isUser ? (
+                    <AddressList userId={getDataFromToken().userId} />
+                  ) : (
+                    ""
+                  )}
                 </div>
               </div>
             </div>
