@@ -296,9 +296,9 @@ const useCartStore = create((set, get) => ({
       if (!token) throw new Error("Authentication required. Please login.");
 
       const response = await fetch(
-        "http://localhost:3000/api/v1/cart/applyCoupon",
+        "http://localhost:3000/api/v1/carts/applyCoupon",
         {
-          method: "PUT",
+          method: "post",
           headers: {
             "Content-Type": "application/json",
             token: `${token}`,
@@ -313,13 +313,12 @@ const useCartStore = create((set, get) => ({
       }
 
       set({
-        cartItems: data.data?.cartItems || get().cartItems,
+        cartItems: data.cart?.cartItems || [],
         cartSummary: {
-          totalCartPrice: data.data?.totalCartPrice || 0,
-          totalPriceAfterDiscount: data.data?.totalPriceAfterDiscount || 0,
+          totalCartPrice: data.cart?.totalPrice || 0,
+          totalPriceAfterDiscount: data.cart?.totalPriceAfterDiscount || 0,
           numOfCartItems: data.numOfCartItems || 0,
         },
-        appliedCoupon: couponName,
         loading: false,
       });
       toast.success("Coupon applied successfully");

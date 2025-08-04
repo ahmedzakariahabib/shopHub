@@ -18,6 +18,7 @@ import useProductStore from "@/app/_store/useProductStore";
 import useAuthStore from "@/app/_store/authStore";
 import useWishlistStore from "@/app/_store/wishlist";
 import useCartStore from "@/app/_store/useCartStore";
+import useReviewStore from "@/app/_store/useReviewStore";
 
 const ProductDetail = () => {
   const router = useRouter();
@@ -33,6 +34,8 @@ const ProductDetail = () => {
     updateCartItemQuantity,
     fetchCart,
   } = useCartStore();
+
+  const { deleteReview } = useReviewStore();
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [isUser, setIsUser] = useState(false);
@@ -57,6 +60,24 @@ const ProductDetail = () => {
       return null;
     }
   };
+
+  const getId = () => {
+    try {
+      const authStorage = localStorage.getItem("auth-storage");
+      if (!authStorage) return null;
+
+      const { token } = JSON.parse(authStorage)?.state || {};
+      if (!token) return null; // fix: check for absence of token
+
+      const decoded = jwtDecode(token);
+      return decoded?.userId || null;
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  };
+
+  console.log(currentProduct);
 
   useEffect(() => {
     const role = getRoleFromToken();
@@ -179,6 +200,19 @@ const ProductDetail = () => {
       const success = await deleteProduct(productId);
       if (success) {
         router.push("/dashboard");
+      }
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this review? This action cannot be undone."
+      )
+    ) {
+      let success = await deleteReview(reviewId);
+      if (success) {
+        fetchProduct(productId);
       }
     }
   };
@@ -601,17 +635,44 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Reviews Section */}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold mt-6 text-gray-900">
+              Customer Reviews ({currentProduct.myReviews.length})
+            </h3>
+            {isUser ? (
+              <button
+                onClick={() => router.push(`/reviews/addReview/${productId}`)}
+                className="bg-[#16a34a] hover:bg-[#65a30d] text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Add Review
+              </button>
+            ) : (
+              ""
+            )}
+          </div>
           {currentProduct.myReviews && currentProduct.myReviews.length > 0 && (
             <div className="mt-12 border-t border-gray-200 pt-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">
-                Customer Reviews
-              </h3>
               <div className="space-y-6">
                 {currentProduct.myReviews.map((review) => (
-                  <div key={review._id} className="bg-gray-50 rounded-lg p-4">
+                  <div
+                    key={review._id}
+                    className="bg-gray-50 rounded-lg p-4 relative group"
+                  >
                     <div className="flex items-start justify-between mb-3">
-                      <div>
+                      <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-medium text-gray-900 capitalize">
                             {review.user.name}
@@ -624,10 +685,135 @@ const ProductDetail = () => {
                           {formatDate(review.createdAt)}
                         </p>
                       </div>
+
+                      {/* Action buttons - show on hover or always visible on mobile */}
+
+                      {getId() === review?.user?._id && isUser ? (
+                        <div
+                          className="flex items-center gap-
+                      2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 md:opacity-100"
+                        >
+                          <button
+                            onClick={() =>
+                              router.push(`/reviews/editReview/${review._id}`)
+                            }
+                            className="text-[#16a34a] mt-10  hover:text-[#65a30d] p-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
+                            title="Edit review"
+                          >
+                            <svg
+                              className="w-6 h-10 "
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteReview(review._id)}
+                            className="text-red-600 mt-10 hover:text-red-800 p-1 rounded-full hover:bg-red-50 transition-colors duration-200"
+                            title="Delete review"
+                          >
+                            <svg
+                              className="w-6 h-10"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a-2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        ""
+                      )}
+
+                      {isAdmin ? (
+                        <button
+                          onClick={() => handleDeleteReview(review._id)}
+                          className="text-red-600 mt-10 hover:text-red-800 p-1 rounded-full hover:bg-red-50 transition-colors duration-200"
+                          title="Delete review"
+                        >
+                          <svg
+                            className="w-6 h-10"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a-2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      ) : (
+                        ""
+                      )}
                     </div>
+
                     <p className="text-gray-700">{review.text}</p>
+
+                    {/* Edit indicator */}
+                    {review.isEdited && (
+                      <p className="text-xs text-gray-400 mt-2 italic">
+                        Last edited: {formatDate(review.updatedAt)}
+                      </p>
+                    )}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Add Review Section - Show when no reviews or when adding */}
+          {(!currentProduct.myReviews ||
+            currentProduct.myReviews.length === 0) && (
+            <div className="mt-12 border-t border-gray-200 pt-8">
+              <div className="text-center py-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  No Reviews Yet
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  Be the first to share your thoughts about this product.
+                </p>
+                {isUser ? (
+                  <button
+                    onClick={() =>
+                      router.push(`/reviews/addReview/${productId}`)
+                    }
+                    className="bg-[#16a34a]  hover:bg-[#65a30d] text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 mx-auto"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    Write a Review
+                  </button>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
           )}

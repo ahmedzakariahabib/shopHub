@@ -13,6 +13,7 @@ import {
 import useCartStore from "../_store/useCartStore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+
 const CartComponent = () => {
   const {
     cartItems,
@@ -466,40 +467,23 @@ const CartComponent = () => {
                   Coupon Code
                 </h3>
 
-                {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-green-600" />
-                      <span className="text-green-700 font-medium">
-                        {appliedCoupon}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex gap-2 mb-4">
-                    <input
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      placeholder="Enter coupon code"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleApplyCoupon(e);
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      disabled={!couponCode.trim() || loading}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                )}
+                <div className="grid gap-2 mb-4 grid-cols-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    placeholder="Enter coupon code"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={!couponCode.trim() || loading}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Apply
+                  </button>
+                </div>
 
                 {/* Order Summary */}
                 <h3 className="font-semibold text-gray-900 mb-4">

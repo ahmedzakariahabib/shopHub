@@ -1,6 +1,7 @@
 import { catchError } from "../../middleware/catchError.js";
 import { ApiFeatures } from "../../utils/apiFeatures.js";
 import { reviewModel } from "../../../database/models/review.model.js";
+import { userModel } from "../../../database/models/user.model.js";
 import { AppError } from "../../utils/AppError.js";
 const addReview = catchError(async (req, res, next) => {
   req.body.user = req.user._id;
@@ -49,12 +50,20 @@ const updateReview = catchError(async (req, res, next) => {
 });
 
 const deleteReview = catchError(async (req, res, next) => {
-  let review = await reviewModel.findOneAndDelete({
-    _id: req.params.id,
-    user: req.user._id,
-  });
-  !review && next(new AppError("review not found", 404));
-  review && res.json({ message: "success", review });
+  const user = await userModel.findOne({ _id: req.user._id });
+
+  if (user.role === "admin") {
+    let review = await reviewModel.findByIdAndDelete(req.params.id);
+    !review && next(new AppError("review not found", 404));
+    review && res.json({ message: "success", review });
+  } else {
+    let review = await reviewModel.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+    !review && next(new AppError("review not found", 404));
+    review && res.json({ message: "success", review });
+  }
 });
 
 export {

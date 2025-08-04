@@ -32,7 +32,6 @@ const Navbar = () => {
   const wishlistCount = wishlistItems?.length || 0;
   const cartCount = cartItems?.length || 0;
 
-  console.log("fav", wishlistItems, "car", cartItems);
   const router = useRouter();
   const getRoleFromToken = () => {
     try {
@@ -107,13 +106,22 @@ const Navbar = () => {
               </Link>
 
               {isAdmin ? (
-                <Link
-                  href="/users"
-                  className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
-                >
-                  users
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
-                </Link>
+                <>
+                  <Link
+                    href="/users"
+                    className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
+                  >
+                    users
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/coupons"
+                    className="text-gray-700 hover:text-[#65a30d] font-medium transition-colors relative group"
+                  >
+                    coupons
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#16a34a] transition-all group-hover:w-full"></span>
+                  </Link>
+                </>
               ) : (
                 ""
               )}
