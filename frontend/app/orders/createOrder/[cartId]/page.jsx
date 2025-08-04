@@ -141,7 +141,7 @@ const CreateOrder = () => {
       const result = await createOrder(orderData, cartId);
 
       if (result) {
-        router.push(`/dashboard}`);
+        router.push("/dashboard");
       }
     } catch (error) {
       console.error("Error creating order:", error);

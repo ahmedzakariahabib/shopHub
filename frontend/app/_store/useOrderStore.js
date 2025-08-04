@@ -96,7 +96,7 @@ const useOrderStore = create((set, get) => ({
     try {
       const token = get().getAuthToken();
       if (!token) throw new Error("Authentication required. Please login.");
-
+      console.log(orderData.shippingAddress);
       const response = await fetch(
         `http://localhost:3000/api/v1/orders/${id}`,
         {
@@ -105,7 +105,7 @@ const useOrderStore = create((set, get) => ({
             "Content-Type": "application/json",
             token: `${token}`,
           },
-          body: JSON.stringify(orderData),
+          body: JSON.stringify({ shippingAddress: orderData.shippingAddress }),
         }
       );
 
