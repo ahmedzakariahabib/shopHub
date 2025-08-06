@@ -20,11 +20,9 @@ import useWishlistStore from "../_store/wishlist";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const [isAdmin, setIsAdmin] = useState(null);
   const [isUser, setIsUser] = useState(null);
   const { role: stateRole, logout, name } = useAuthStore();
-
   const { wishlistItems } = useWishlistStore();
   const { cartItems } = useCartStore();
 

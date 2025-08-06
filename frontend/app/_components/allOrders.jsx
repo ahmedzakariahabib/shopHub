@@ -95,15 +95,15 @@ const AdminOrders = () => {
 
   const handleStatusUpdate = async (orderId, field, value) => {
     setUpdatingOrder(orderId);
-    try {
-      const updateData = { [field]: value };
-      await updateOrder(orderId, updateData);
-      await fetchOrders(); // Refresh orders
-    } catch (error) {
-      console.error("Error updating order:", error);
-    } finally {
-      setUpdatingOrder(null);
-    }
+    // try {
+    //   const updateData = { [field]: value };
+    //   await updateOrder(orderId, updateData);
+    //   await fetchOrders(); // Refresh orders
+    // } catch (error) {
+    //   console.error("Error updating order:", error);
+    // } finally {
+    //   setUpdatingOrder(null);
+    // }
   };
 
   const getFilteredAndSortedOrders = () => {

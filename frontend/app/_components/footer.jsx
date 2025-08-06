@@ -16,25 +16,25 @@ const Footer = () => {
             <div className="flex space-x-4">
               <a
                 href="#"
-                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#65a30d]transition-colors"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#65a30d] transition-colors"
               >
                 <span className="text-sm">📘</span>
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#65a30d]transition-colors"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#65a30d] transition-colors"
               >
                 <span className="text-sm">🐦</span>
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#65a30d]transition-colors"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#65a30d] transition-colors"
               >
                 <span className="text-sm">📷</span>
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#65a30d]transition-colors"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#65a30d] transition-colors"
               >
                 <span className="text-sm">💼</span>
               </a>
@@ -48,44 +48,29 @@ const Footer = () => {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link
-                  href="/about"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   About Us
-                </Link>
+                </span>
               </li>
               <li>
-                <Link
-                  href="/contact"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Contact
-                </Link>
+                </span>
               </li>
               <li>
-                <Link
-                  href="/careers"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Careers
-                </Link>
+                </span>
               </li>
               <li>
-                <Link
-                  href="/blog"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Blog
-                </Link>
+                </span>
               </li>
               <li>
-                <Link
-                  href="/press"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Press
-                </Link>
+                </span>
               </li>
             </ul>
           </div>
@@ -97,44 +82,29 @@ const Footer = () => {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link
-                  href="/help"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Help Center
-                </Link>
+                </span>
               </li>
               <li>
-                <Link
-                  href="/shipping"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Shipping Info
-                </Link>
+                </span>
               </li>
               <li>
-                <Link
-                  href="/returns"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Returns & Exchanges
-                </Link>
+                </span>
               </li>
               <li>
-                <Link
-                  href="/size-guide"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Size Guide
-                </Link>
+                </span>
               </li>
               <li>
-                <Link
-                  href="/track-order"
-                  className="text-gray-300 hover:text-[#16a34a] transition-colors text-sm"
-                >
+                <span className="text-gray-300 text-sm cursor-default">
                   Track Your Order
-                </Link>
+                </span>
               </li>
             </ul>
           </div>
@@ -155,34 +125,26 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-sm text-gray-400">
-              © 2024 ShopHub. All rights reserved. |
-              <Link
-                href="/privacy"
-                className="hover:text-[#16a34a] transition-colors ml-1"
-              >
-                Privacy Policy
-              </Link>{" "}
-              |
-              <Link
-                href="/terms"
-                className="hover:text-[#16a34a] transition-colors ml-1"
-              >
-                Terms of Service
-              </Link>
+              © 2025 ShopHub. All rights reserved. |
+              <span className="ml-1 cursor-default">Privacy Policy</span> |
+              <span className="ml-1 cursor-default">Terms of Service</span>
             </div>
 
             {/* Payment Methods */}
             <div className="flex items-center space-x-3">
               <span className="text-sm text-gray-400 mr-2">We Accept:</span>
               <div className="flex space-x-2">
+                <div className="w-12 h-6 bg-gray-700 rounded flex items-center justify-center text-xs font-semibold">
+                  CASH
+                </div>
+                <div className="w-14 h-6 bg-gray-700 rounded flex items-center justify-center text-xs font-semibold">
+                  OFFLINE
+                </div>
                 <div className="w-10 h-6 bg-gray-700 rounded flex items-center justify-center text-xs font-semibold">
                   VISA
                 </div>
                 <div className="w-10 h-6 bg-gray-700 rounded flex items-center justify-center text-xs font-semibold">
                   MC
-                </div>
-                <div className="w-10 h-6 bg-gray-700 rounded flex items-center justify-center text-xs font-semibold">
-                  AMEX
                 </div>
                 <div className="w-10 h-6 bg-gray-700 rounded flex items-center justify-center text-xs font-semibold">
                   PP

@@ -45,6 +45,7 @@ const OrderDetail = () => {
       return null;
     }
   };
+  console.log(currentOrder);
 
   useEffect(() => {
     const role = getRoleFromToken();
@@ -84,7 +85,8 @@ const OrderDetail = () => {
   };
 
   const calculateItemTotal = (item) => {
-    return item.quantity * item.price;
+    console.log("item", item);
+    return item.quantity * item.product.priceAfterDiscount;
   };
 
   if (loading && !currentOrder) {
@@ -130,9 +132,6 @@ const OrderDetail = () => {
               <Package className="w-6 h-6 text-[#16a34a]" />
               <h3 className="text-xl font-bold text-gray-800">Order Details</h3>
             </div>
-            <p className="mt-2 text-sm text-gray-600 pl-9">
-              Order ID: {currentOrder._id}
-            </p>
           </div>
           <button
             onClick={() => router.back()}
@@ -321,28 +320,23 @@ const OrderDetail = () => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Items Total:</span>
                 <span className="font-medium">
-                  {formatCurrency(
-                    currentOrder.orderItems.reduce(
-                      (total, item) => total + calculateItemTotal(item),
-                      0
-                    )
-                  )}
+                  {formatCurrency(currentOrder.totalOrderPrice)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Shipping:</span>
                 <span className="font-medium text-green-600">Free</span>
               </div>
-              <div className="border-t border-gray-300 pt-3">
+              {/* <div className="border-t border-gray-300 pt-3">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-gray-900">
                     Total Amount:
                   </span>
                   <span className="text-2xl font-bold text-[#16a34a]">
-                    {formatCurrency(currentOrder.totalOrderPrice)}
+                    {formatCurrency(currentOrder.orderItems)}
                   </span>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 

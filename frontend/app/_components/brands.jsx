@@ -191,7 +191,7 @@ const BrandsList = () => {
                           onClick={() =>
                             router.push(`/brands/brandDetails/${brand._id}`)
                           }
-                          className="text-[#16a34a] hover:text-[#65a30d] transition-colors"
+                          className="text-[#16a34a] flex gap-2 items-center hover:text-[#65a30d] transition-colors"
                         >
                           <Eye className="w-4 h-4" />
                           Details
@@ -203,14 +203,14 @@ const BrandsList = () => {
                               onClick={() =>
                                 router.push(`/brands/editBrand/${brand._id}`)
                               }
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                              className="text-blue-600 flex gap-2 items-center hover:text-blue-800 transition-colors"
                             >
                               <Edit className="w-4 h-4" />
                               Edit
                             </button>
                             <button
                               onClick={() => handleDelete(brand._id)}
-                              className="text-red-600 hover:text-red-800 transition-colors"
+                              className="text-red-600 flex gap-2 items-center hover:text-red-800 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                               Delete

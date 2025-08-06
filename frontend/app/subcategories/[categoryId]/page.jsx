@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import toast from "react-hot-toast";
 import useSubcategoryStore from "@/app/_store/useSubCategoryStore";
 import useAuthStore from "@/app/_store/authStore";
+import { Edit, Eye, Trash2 } from "lucide-react";
 
 const SubcategoriesList = () => {
   const router = useRouter();
@@ -134,24 +135,20 @@ const SubcategoriesList = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-center  text-xs font-medium text-black uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xl font-medium text-black uppercase tracking-wider">
                     Image
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-black uppercase tracking-wider">
+                  <th className="px-6 py-3 text-centertext-xl font-medium text-black uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-black uppercase tracking-wider">
+                  <th className="px-6 py-3 text-centertext-xl font-medium text-black uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {subcategories.map((subcategory) => (
-                  <tr
-                    key={subcategory._id}
-                    className="hover:bg-gray-50"
-                    onClick={() => handleSubCategoryClick(subcategory._id)}
-                  >
+                  <tr key={subcategory._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 flex justify-center whitespace-nowrap">
                       {subcategory.category?.image ? (
                         <div className="relative   h-10 w-10 rounded-md overflow-hidden">
@@ -160,10 +157,18 @@ const SubcategoriesList = () => {
                             alt={subcategory.name}
                             fill
                             className="object-cover"
+                            onClick={() =>
+                              handleSubCategoryClick(subcategory._id)
+                            }
                           />
                         </div>
                       ) : (
-                        <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center">
+                        <div
+                          className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center"
+                          onClick={() =>
+                            handleSubCategoryClick(subcategory._id)
+                          }
+                        >
                           <svg
                             className="h-6 w-6 text-gray-400"
                             fill="none"
@@ -181,7 +186,10 @@ const SubcategoriesList = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td
+                      className="px-6 py-4 whitespace-nowrap"
+                      onClick={() => handleSubCategoryClick(subcategory._id)}
+                    >
                       <div className="text-sm font-medium text-center text-gray-900">
                         {subcategory.name}
                       </div>
@@ -194,9 +202,10 @@ const SubcategoriesList = () => {
                               `/subcategories/subCategoryDetails/${subcategory._id}`
                             )
                           }
-                          className="text-[#16a34a] hover:text-[#65a30d] transition-colors"
+                          className="text-[#16a34a] flex gap-2 items-center hover:text-[#65a30d] transition-colors"
                         >
-                          Details
+                          <Eye className="w-4 h-4" />
+                          <h2>Details</h2>
                         </button>
                         {isAdmin && (
                           <>
@@ -206,15 +215,16 @@ const SubcategoriesList = () => {
                                   `/subcategories/editSubCategory/${subcategory._id}`
                                 )
                               }
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                              className="text-blue-600 flex gap-2 items-center hover:text-blue-800 transition-colors"
                             >
-                              Edit
+                              <Edit className="w-4 h-4" />
+                              <h2> Edit</h2>
                             </button>
                             <button
                               onClick={() => handleDelete(subcategory._id)}
-                              className="text-red-600 hover:text-red-800 transition-colors"
+                              className="text-red-600 flex gap-2 items-center hover:text-red-800 transition-colors"
                             >
-                              Delete
+                              <Trash2 className="w-4 h-4" /> <h2>Delete</h2>
                             </button>
                           </>
                         )}

@@ -21,9 +21,15 @@ const CreateOrder = () => {
   const router = useRouter();
   const { cartId } = useParams();
   const { createOrder, loading: orderLoading } = useOrderStore();
-  const { cartItems, fetchCart, loading: cartLoading } = useCartStore();
+  const {
+    cartItems,
+    fetchCart,
+    loading: cartLoading,
+    getCartTotal,
+  } = useCartStore();
   const { role: stateRole } = useAuthStore();
 
+  const totalPriceAfterDiscount = getCartTotal();
   const [isUser, setIsUser] = useState(false);
   const [formData, setFormData] = useState({
     city: "",
@@ -55,7 +61,7 @@ const CreateOrder = () => {
     setIsUser(CheckIsUser);
 
     if (!CheckIsUser) {
-      router.push("/login");
+      router.push("/dashboard");
       return;
     }
 
@@ -365,12 +371,16 @@ const CreateOrder = () => {
                     <span className="text-gray-600">Shipping:</span>
                     <span className="font-medium text-green-600">Free</span>
                   </div>
-                  <div className="flex justify-between items-center text-lg font-bold border-t border-gray-300 pt-2">
-                    <span>Total:</span>
-                    <span className="text-[#16a34a]">
-                      {formatCurrency(calculateCartTotal())}
-                    </span>
-                  </div>
+                  {totalPriceAfterDiscount ? (
+                    <div className="flex justify-between items-center text-lg font-bold border-t border-gray-300 pt-2">
+                      <span>Total After Discount:</span>
+                      <span className="text-[#16a34a]">
+                        {formatCurrency(totalPriceAfterDiscount)}
+                      </span>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </div>
 
                 {/* Payment Info */}

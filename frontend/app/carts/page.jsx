@@ -372,9 +372,11 @@ const CartComponent = () => {
                               <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
                                 Save $
                                 {(
-                                  productData.price -
-                                  productData.priceAfterDiscount
-                                ).toFixed(2)}
+                                  (productData.price -
+                                    productData.priceAfterDiscount) *
+                                  item.quantity
+                                ).toFixed(2)}{" "}
+                                for {item.quantity} item
                               </span>
                             )}
                         </div>
@@ -535,12 +537,12 @@ const CartComponent = () => {
                   </div>
                 </div>
 
-                <button
+                {/* <button
                   disabled={loading || cartItems.length === 0}
                   className="w-full mt-6 bg-[#16a34a] text-white py-3 rounded-lg hover:bg-[#65a30d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   Proceed to Checkout
-                </button>
+                </button> */}
               </div>
             </div>
           </div>

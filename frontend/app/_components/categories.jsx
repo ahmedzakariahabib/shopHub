@@ -6,6 +6,7 @@ import Image from "next/image";
 import { jwtDecode } from "jwt-decode";
 import useCategoryStore from "../_store/useCategoryStore";
 import useAuthStore from "../_store/authStore";
+import { Edit, Eye, Trash2 } from "lucide-react";
 
 const CategoriesList = () => {
   const router = useRouter();
@@ -185,7 +186,7 @@ const CategoriesList = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-4  justify-center   ">
+                      <div className="flex space-x-4  items-center justify-center   ">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -193,9 +194,10 @@ const CategoriesList = () => {
                               `/categories/categoriesDetails/${category._id}`
                             );
                           }}
-                          className="text-[#16a34a] hover:text-[#65a30d] transition-colors"
+                          className="text-[#16a34a] flex gap-2 items-center  hover:text-[#65a30d] transition-colors"
                         >
-                          Details
+                          <Eye className="w-4 h-4" />
+                          <h2>Details</h2>
                         </button>
                         {isAdmin && (
                           <>
@@ -206,18 +208,19 @@ const CategoriesList = () => {
                                   `/categories/editCategory/${category._id}`
                                 );
                               }}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                              className="text-blue-600  flex gap-2 items-center hover:text-blue-800 transition-colors"
                             >
-                              Edit
+                              <Edit className="w-4 h-4" />
+                              <h2> Edit</h2>
                             </button>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDelete(category._id);
                               }}
-                              className="text-red-600 hover:text-red-800 transition-colors"
+                              className="text-red-600 flex gap-2 items-center hover:text-red-800 transition-colors"
                             >
-                              Delete
+                              <Trash2 className="w-4 h-4" /> <h2>Delete</h2>
                             </button>
                           </>
                         )}

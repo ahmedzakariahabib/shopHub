@@ -63,7 +63,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f0fdf4] via-[#ecfdf5] to-[#dcfce7] flex items-center justify-center p-4">
+    <div className="min-h-screen mt-[-30px] bg-gradient-to-br from-[#f0fdf4] via-[#ecfdf5] to-[#dcfce7] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand - Matches register form */}
         <div className="text-center mb-8">

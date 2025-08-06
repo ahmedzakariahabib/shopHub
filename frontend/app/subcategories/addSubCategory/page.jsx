@@ -40,7 +40,7 @@ const CreateSubcategory = () => {
     const success = await createSubcategory(formData.categoryId, formData.name);
     if (success) {
       toast.success("Subcategory created successfully");
-      router.push("/");
+      router.push("/dashboard");
     }
   };
 
@@ -261,7 +261,7 @@ const CreateSubcategory = () => {
               <div className="flex justify-end space-x-4 pt-8 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => router.push("/")}
+                  onClick={() => router.push("/dashboard")}
                   className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors shadow-sm font-medium"
                   disabled={loading}
                 >

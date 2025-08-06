@@ -45,7 +45,7 @@ const CategoryDetail = ({ params }) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       const success = await deleteCategory(categoryId);
       if (success) {
-        router.push("/");
+        router.push("/dashboard");
       }
     }
   };
@@ -72,7 +72,7 @@ const CategoryDetail = ({ params }) => {
           </div>
           <div className="px-6 py-4 bg-gray-50 text-right">
             <button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/dashboard")}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#16a34a] hover:bg-[#65a30d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16a34a] transition-colors"
             >
               Back to Categories
@@ -113,7 +113,7 @@ const CategoryDetail = ({ params }) => {
           {isAdmin ? (
             <div className="flex space-x-3">
               <button
-                onClick={() => router.push("/")}
+                onClick={() => router.push("/dashboard")}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16a34a] transition-colors"
               >
                 Back
@@ -135,7 +135,7 @@ const CategoryDetail = ({ params }) => {
             </div>
           ) : (
             <button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/dashboard")}
               className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16a34a] transition-colors"
             >
               Back
