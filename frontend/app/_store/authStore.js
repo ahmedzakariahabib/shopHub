@@ -42,6 +42,9 @@ const useAuthStore = create(
             throw new Error(data.message || "Login failed");
           }
 
+          // Store token in cookie for middleware access
+          document.cookie = `token=${data.token};path=/;max-age=604800;secure;samesite=strict`;
+
           set({
             name: data.user?.name,
             token: data.token,
@@ -135,7 +138,11 @@ const useAuthStore = create(
           return { success: false, error: error.message };
         }
       },
+
       logout: () => {
+        // Clear cookie
+        document.cookie = "token=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT";
+
         set({
           name: null,
           token: null,
