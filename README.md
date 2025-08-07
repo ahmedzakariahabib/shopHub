@@ -72,6 +72,9 @@ This project demonstrates the complete lifecycle of an e-commerce platform using
 
 ---
 
+https://github.com/user-attachments/assets/172aeb31-aae2-4ea1-a3a1-bef203de3edb
+
+
 ## ⚙️ Installation
 
 1. **Clone the repository**
@@ -80,5 +83,5 @@ git clone https://github.com/ahmedzakariahabib/shophub
 cd shophub
 
 
-https://github.com/user-attachments/assets/172aeb31-aae2-4ea1-a3a1-bef203de3edb
+
 
