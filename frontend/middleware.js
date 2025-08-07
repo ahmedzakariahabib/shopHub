@@ -26,7 +26,7 @@ const accessControl = {
   "/wishlist": ["user"],
   "/address": ["user"],
   "/createOrder": ["user"],
-  "/order": ["user"],
+  "/orders/order": ["user"],
   "/addReview": ["user"],
   "/editReview": ["user"],
 
@@ -105,7 +105,7 @@ export const config = {
     "/wishlist",
     "/address",
     "/createOrder",
-    "/order/:path*",
+    "/orders/order",
     "/addReview",
     "/editReview/:path*",
 
