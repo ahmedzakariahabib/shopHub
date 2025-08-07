@@ -160,9 +160,9 @@ const AddProduct = () => {
 
     const result = await createProduct(productData, images, imgCover);
 
-    if (result) {
-      router.push("/dashboard");
-    }
+    // if (result) {
+    //   router.push("/dashboard");
+    // }
   };
 
   return (

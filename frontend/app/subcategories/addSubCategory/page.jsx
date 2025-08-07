@@ -40,7 +40,7 @@ const CreateSubcategory = () => {
     const success = await createSubcategory(formData.categoryId, formData.name);
     if (success) {
       toast.success("Subcategory created successfully");
-      router.push("/dashboard");
+      // router.push("/dashboard");
     }
   };
 

@@ -40,9 +40,9 @@ const CreateCategoryForm = () => {
     }
 
     const success = await createCategory(name, imageFile);
-    if (success) {
-      router.push("/dashboard");
-    }
+    // if (success) {
+    //   router.push("/dashboard");
+    // }
   };
 
   const handleGoBack = () => {
